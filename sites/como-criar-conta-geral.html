@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VirtBook - Criar Conta Geral</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background-color: #F7F3E8; color: #4A3A3A; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; line-height: 1.6; }
+        .container { background: rgba(255, 255, 255, 0.4); border-radius: 24px; box-shadow: 0 8px 32px rgba(220, 150, 150, 0.1); max-width: 800px; width: 100%; padding: 40px 50px; text-align: left; }
+        h2 { color: #D97B7B; font-weight: 700; margin-bottom: 25px; font-size: 1.8rem; text-align: center; line-height: 1.2; }
+        p { font-weight: 300; margin-bottom: 20px; font-size: 1rem; }
+        h3 { color: #D97B7B; font-weight: 500; margin-top: 35px; margin-bottom: 15px; font-size: 1.15rem; }
+        ul { list-style-type: disc; margin-left: 25px; margin-bottom: 20px; font-weight: 300; font-size: 1rem; }
+        li { margin-bottom: 10px; }
+        a { color: #D97B7B; font-weight: 500; text-decoration: none; transition: color 0.2s; }
+        a:hover { color: #c46a6a; }
+        strong { font-weight: 500; }
+        .dica-box { background: rgba(217, 123, 123, 0.1); border-left: 5px solid #D97B7B; padding: 20px 25px; border-radius: 0 12px 12px 0; margin: 30px 0; font-size: 0.95rem; font-weight: 300; }
+        .sucesso { text-align: center; font-size: 1.1rem; font-weight: 500; margin-top: 40px; color: #8ca885; }
+        @media (max-width: 600px) {
+            .container { padding: 30px 20px; }
+            h2 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Como criar sua conta na Azure</h2>
+        <p>A Microsoft oferece uma conta inicial gratuita com <strong>US$ 200 em créditos</strong> para você utilizar nos primeiros 30 dias. Para criar a sua e começar a usar o VirtBook, siga os passos abaixo:</p>
+
+        <h3>1. Acesse o portal oficial</h3>
+        <ul>
+            <li>Entre no site oficial da Azure: <a href="https://azure.microsoft.com/pt-br/free" target="_blank">azure.microsoft.com/pt-br/free</a></li>
+            <li>Clique no botão verde <strong>"Inicie gratuitamente"</strong>.</li>
+        </ul>
+
+        <h3>2. Autenticação</h3>
+        <ul>
+            <li>Faça login com uma conta Microsoft existente (Outlook, Hotmail, Xbox) ou clique em "Crie uma!" para registrar um novo e-mail na hora.</li>
+        </ul>
+
+        <h3>3. Verificação de Identidade</h3>
+        <ul>
+            <li>Preencha seu perfil com nome, e-mail e telefone.</li>
+            <li>A Microsoft fará uma verificação rápida enviando um código via SMS para o seu celular.</li>
+        </ul>
+
+        <h3>4. Verificação de Cartão de Crédito (Importante)</h3>
+        <ul>
+            <li>Será necessário inserir os dados de um cartão de crédito válido. <strong>Você não será cobrado.</strong></li>
+            <li>Esse é um procedimento padrão e obrigatório de segurança da Microsoft, usado apenas para confirmar sua identidade e evitar robôs/contas falsas.</li>
+            <li>Há um limite de gastos em vigor. Se os seus US$ 200 em créditos acabarem, seus serviços serão apenas pausados. A Azure <strong>não fará nenhuma cobrança automática</strong> no seu cartão, a menos que você vá ativamente nas configurações e mude seu plano para pago.</li>
+        </ul>
+
+        <div class="dica-box">
+            <strong>Dica:</strong> Não possui cartão de crédito? Fique tranquilo. Você pode utilizar cartões virtuais de contas como o Mercado Pago (que usa o seu saldo na função crédito) ou opções como Neon e Inter (que convertem seu saldo em limite). São alternativas totalmente seguras e práticas para passar por essa etapa de verificação sem preocupações.
+        </div>
+
+        <h3>5. Finalização</h3>
+        <ul>
+            <li>Aceite os termos de serviço.</li>
+            <li>Clique em <strong>"Inscrever-se"</strong>.</li>
+        </ul>
+
+        <p class="sucesso">Pronto! Sua conta em nuvem está ativa. Agora você já pode aproveitar o VirtBook!</p>
+    </div>
+
+</body>
+</html>
