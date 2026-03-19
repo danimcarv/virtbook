@@ -132,8 +132,8 @@
         <div class="modal-content" style="text-align: center;">
             <h3 style="color: #D97B7B;">Criar Conta Azure</h3>
             <div style="display: flex; gap: 12px; justify-content: center; margin-top: 25px; flex-wrap: wrap;">
-                <button onclick="abrirLink('https://exemplo.dominio/criar-conta-estudante.pdf')">Sou estudante</button>
-                <button onclick="abrirLink('https://exemplo.dominio/criar-conta-geral.pdf')">Não sou estudante</button>
+                <button onclick="abrirLink(configApp.urlCriarContaEstudante)">Sou estudante</button>
+                <button onclick="abrirLink(configApp.urlCriarContaGeral)">Não sou estudante</button>
             </div>
             <button class="btn-secondary" style="margin-top: 25px;" onclick="fecharModais()">Fechar</button>
         </div>
@@ -152,10 +152,13 @@
             
             <textarea id="supDescricao" rows="4" placeholder="Descrição do problema"></textarea>
             
-            <input type="file" id="supArquivo" accept=".pdf, image/*" style="background: transparent; border: none; padding: 0;">
+            <input type="file" id="supArquivo" accept="application/pdf, image/*" multiple style="background: transparent; border: none; padding: 0; margin-bottom: 5px;">
+            <p class="txt-pequeno" style="color: #888; margin-top: 0; margin-bottom: 15px;">Opcional. Até 3 arquivos (PDF ou imagem), máx. 5MB cada.</p>
             
-            <div style="display: flex; gap: 12px; margin-top: 25px;">
-                <button onclick="enviarSuporte()">Enviar</button>
+            <p class="txt-pequeno" style="color: #4A3A3A; text-align: center; margin-bottom: 20px; font-weight: 500;">Caso prefira, nos envie um e-mail diretamente: <a href="mailto:projeto.virtbook@gmail.com">projeto.virtbook@gmail.com</a></p>
+            
+            <div style="display: flex; gap: 12px; margin-top: 25px; justify-content: center;">
+                <button id="btnEnviarSuporte" onclick="enviarSuporte()">Enviar</button>
                 <button class="btn-secondary" onclick="fecharModais()">Cancelar</button>
             </div>
         </div>
@@ -195,8 +198,11 @@
         const configApp = {
             clientId: "4b05dec0-b195-405d-90d2-990b44e36e4b",
             urlManual: "https://exemplo.dominio/manual.pdf",
-            urlPrintTenant: "https://exemplo.dominio/tenant-id.jpeg",
-            urlBackendEmail: "https://api.formik.com/submit/projeto.virtbook@gmail.com",
+            urlCriarContaEstudante: "https://exemplo.dominio/criar-conta-estudante.pdf",
+            urlCriarContaGeral: "https://exemplo.dominio/criar-conta-geral.pdf",
+            urlPrintTenant: "https://danimcarv.github.io/virtbook/sites/instr-tenant-id.jpg",
+            urlBackendEmail: "https://formspree.io/f/xjgajdww",
+            urlAppsScript: "https://script.google.com/macros/s/AKfycbx6oDfkzKY4akI4ICtgKX7Ku_GyReYXbaySDrQ52iiD1-kMD7buzsBGaQnz-mmOApUm/exec",
             rgName: "virtbook-rg",
             vmName: "virtbook-vm",
             location: "centralindia"
@@ -523,6 +529,11 @@
             document.getElementById('modalContas').classList.add('hidden');
             document.getElementById('modalErro').classList.add('hidden');
             document.getElementById('modalAvaliacao').classList.add('hidden');
+            const btn = document.getElementById('btnEnviarSuporte');
+            if(btn) {
+                btn.disabled = false;
+                btn.innerText = "Enviar";
+            }
         }
 
         function gerarTicket() {
@@ -535,18 +546,81 @@
             document.getElementById('ticketDisplay').innerText = `Ticket: ${ticketAtual}`;
         }
 
-        function enviarSuporte() {
-            const n = document.getElementById('supNome').value;
-            const sn = document.getElementById('supSobrenome').value;
-            const e = document.getElementById('supEmail').value;
-            const ec = document.getElementById('supEmailConf').value;
-            const desc = erroAtual ? erroAtual : document.getElementById('supDescricao').value;
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        async function enviarSuporte() {
+            const n = document.getElementById('supNome').value.trim();
+            const sn = document.getElementById('supSobrenome').value.trim();
+            const e = document.getElementById('supEmail').value.trim();
+            const ec = document.getElementById('supEmailConf').value.trim();
+            const desc = erroAtual ? erroAtual : document.getElementById('supDescricao').value.trim();
+            const arquivos = document.getElementById('supArquivo').files;
+            const btn = document.getElementById('btnEnviarSuporte');
 
             if (!n || !sn || !e || !ec || !desc) { alert("Preencha todos os campos."); return; }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(e)) { alert("E-mail inválido."); return; }
             if (e !== ec) { alert("Os e-mails não conferem."); return; }
+            
+            if (arquivos.length > 3) { alert("Você pode anexar no máximo 3 arquivos."); return; }
 
-            const payload = { title: `Ticket ${ticketAtual}`, nome: n, sobrenome: sn, email: e, descricao: desc };
+            for (let i = 0; i < arquivos.length; i++) {
+                if (arquivos[i].size > 5 * 1024 * 1024) {
+                    alert("Os arquivos devem ter no máximo 5MB cada.");
+                    return;
+                }
+                if (!arquivos[i].type.startsWith('image/') && arquivos[i].type !== 'application/pdf') {
+                    alert("Formato de arquivo inválido.");
+                    return;
+                }
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Enviando...";
+
+            let linkArquivos = "sem_arquivos";
+
+            if (arquivos.length > 0) {
+                let base64Files = [];
+                for (let i = 0; i < arquivos.length; i++) {
+                    base64Files.push({
+                        name: arquivos[i].name,
+                        mimeType: arquivos[i].type,
+                        base64: await fileToBase64(arquivos[i])
+                    });
+                }
+
+                try {
+                    const gasRes = await fetch(configApp.urlAppsScript, {
+                        method: 'POST',
+                        body: JSON.stringify({ ticket: ticketAtual, files: base64Files })
+                    });
+                    const gasData = await gasRes.json();
+                    linkArquivos = gasData.folderUrl || "erro_ao_gerar_link";
+                } catch (err) {
+                    linkArquivos = "erro_de_conexao_com_drive";
+                }
+            }
+
+            const payload = { 
+                title: `Ticket ${ticketAtual}`, 
+                nome: n, 
+                sobrenome: sn, 
+                email: e, 
+                descricao: desc,
+                link_arquivos: linkArquivos
+            };
+            
             enviarEmailBackend(payload);
+
             alert("Ticket enviado com sucesso! Guarde o seu número: " + ticketAtual);
             fecharModais();
         }
@@ -574,7 +648,11 @@
         }
 
         function enviarEmailBackend(dados) {
-            fetch(configApp.urlBackendEmail, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) }).catch(e => console.log(e));
+            fetch(configApp.urlBackendEmail, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify(dados)
+            }).catch(e => console.log(e));
         }
     </script>
 </body>
