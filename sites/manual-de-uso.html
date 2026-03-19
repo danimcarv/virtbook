@@ -23,12 +23,17 @@
         a:hover { color: #c46a6a; }
         
         .print-img {
-            width: 100%;
+            max-width: 100%;
             height: auto;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            margin: 25px 0;
+            margin: 25px auto;
             display: block;
+        }
+
+        .img-dialog {
+            max-width: 450px;
+            width: 100%;
         }
         
         .alert-box { background: rgba(217, 123, 123, 0.05); border-left: 6px solid #D97B7B; padding: 25px; border-radius: 0 16px 16px 0; margin: 35px 0; }
@@ -97,8 +102,8 @@
             <p>No primeiro uso da máquina, serão exibidos alguns avisos de certificado e de confiabilidade.</p>
             <p>Certifique-se de marcar as caixas de <strong>“Não mostrar novamente”</strong> e de confirmar a conexão.</p>
             
-            <img src="https://danimcarv.github.io/virtbook/img/print3.png" class="print-img">
-            <img src="https://danimcarv.github.io/virtbook/img/print4.png" class="print-img">
+            <img src="https://danimcarv.github.io/virtbook/img/print3.png" class="print-img img-dialog">
+            <img src="https://danimcarv.github.io/virtbook/img/print4.png" class="print-img img-dialog">
             
             <p>Quando for solicitado, insira a <strong>senha do Windows</strong> que você escolheu durante a criação da máquina.</p>
             <p>No primeiro login, o sistema pode demorar um pouco para iniciar (de 10 a 15 minutos). <strong>Isso é normal e só ocorre no primeiro uso da máquina.</strong></p>
@@ -163,7 +168,7 @@
             <p>Para configurar, deixamos na sua Área de Trabalho um arquivo chamado <strong>configurar_discos</strong>. Ele vai abrir uma “tela preta”, como nos computadores antigos, que vai te guiar pelo processo.</p>
             <p>Basta ir digitando as informações solicitadas e apertando Enter.</p>
             
-            <img src="https://danimcarv.github.io/virtbook/img/print7.png" class="print-img">
+            <img src="https://danimcarv.github.io/virtbook/img/print7.png" class="print-img img-dialog">
             
             <p>Ao final do processo, serão criados os discos <strong>M: para o Mega</strong>, e/ou <strong>G: para o Google Drive</strong>. Interessante também lembrar que os arquivos que estiverem nesses discos também ficarão disponíveis na sua conta online do Mega ou do Google Drive.</p>
             
