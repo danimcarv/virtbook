@@ -3,91 +3,657 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>em breve...</title>
-    
+    <title>VirtBook - Painel do Aluno</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/lib/msal-browser.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #F7F3E8;
-            color: #4A3A3A; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            text-align: center;
-            max-width: 800px;
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 24px;
-            box-shadow: 0 8px 32px rgba(220, 150, 150, 0.1);
-        }
-
-        .tagline {
-            color: #D97B7B; 
-            font-size: 1.1rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 20px;
-            display: block;
-        }
-
-        h1 {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 40px;
-        }
-
-        h1 span {
-            color: #D97B7B;
-        }
-
-        .info-panel {
-            font-size: 1.1rem;
-            font-weight: 500;
-            background-color: #D97B7B;
-            color: #FFFFFF;
-            padding: 16px 36px;
-            border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(217, 123, 123, 0.4);
-            display: inline-block;
-            cursor: default;
-            user-select: none;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 30px 20px;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background-color: #F7F3E8; color: #4A3A3A; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 20px; }
+        .container { background: rgba(255, 255, 255, 0.4); border-radius: 24px; box-shadow: 0 8px 32px rgba(220, 150, 150, 0.1); max-width: 900px; width: 100%; padding: 40px; display: none; }
+        .login-container { background: rgba(255, 255, 255, 0.4); border-radius: 24px; box-shadow: 0 8px 32px rgba(220, 150, 150, 0.1); max-width: 500px; width: 100%; padding: 40px; text-align: center; }
+        h1, h2, h3 { font-weight: 700; margin-bottom: 10px; }
+        p { font-weight: 300; margin-bottom: 15px; }
+        button { font-family: 'Poppins', sans-serif; background-color: #D97B7B; color: #FFFFFF; border: none; padding: 12px 28px; font-size: 14px; font-weight: 500; border-radius: 50px; box-shadow: 0 4px 15px rgba(217, 123, 123, 0.4); cursor: pointer; transition: background-color 0.2s, transform 0.1s; }
+        button:hover { background-color: #c46a6a; transform: translateY(-1px); }
+        button:disabled { background-color: #e6c5c5; box-shadow: none; cursor: not-allowed; transform: none; }
+        .btn-danger { background-color: #b56c6c; box-shadow: 0 4px 15px rgba(181, 108, 108, 0.4); }
+        .btn-danger:hover { background-color: #9e5a5a; }
+        .btn-success { background-color: #8ca885; box-shadow: 0 4px 15px rgba(140, 168, 133, 0.4); }
+        .btn-success:hover { background-color: #758f6e; }
+        .btn-secondary { background-color: rgba(255, 255, 255, 0.6); color: #D97B7B; border: 1px solid #D97B7B; box-shadow: none; }
+        .btn-secondary:hover { background-color: rgba(217, 123, 123, 0.1); }
+        input, textarea { font-family: 'Poppins', sans-serif; width: 100%; padding: 12px 16px; margin: 8px 0 15px 0; border: 1px solid rgba(217, 123, 123, 0.3); border-radius: 12px; background: rgba(255, 255, 255, 0.6); color: #4A3A3A; font-weight: 300; outline: none; }
+        input:focus, textarea:focus { border-color: #D97B7B; background: rgba(255, 255, 255, 0.9); }
+        .card { background: rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 24px; box-shadow: 0 4px 15px rgba(220, 150, 150, 0.05); margin-bottom: 24px; }
+        .setup-box { border-left: 5px solid #D97B7B; background: rgba(255, 255, 255, 0.6); padding: 24px; border-radius: 20px; text-align: left; margin-top: 20px; }
+        .hidden { display: none !important; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .nav-bar { display: flex; gap: 10px; flex-wrap: wrap; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 58, 58, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: #F7F3E8; padding: 40px; border-radius: 24px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(74, 58, 58, 0.2); }
+        .vm-controls { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+        .loader { border: 3px solid rgba(217, 123, 123, 0.2); border-top: 3px solid #D97B7B; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-left: 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .star-rating { font-size: 32px; color: rgba(217, 123, 123, 0.3); cursor: pointer; display: flex; gap: 8px; justify-content: center; margin: 25px 0; }
+        .star-rating span:hover, .star-rating span.active { color: #D97B7B; }
+        .txt-pequeno { font-size: 12px; font-weight: 300; }
+        .txt-aviso { font-size: 12px; margin-bottom: 5px; font-weight: 300; }
+        a { color: #D97B7B; font-weight: 500; text-decoration: none; transition: color 0.2s; }
+        a:hover { color: #c46a6a; }
     </style>
 </head>
 <body>
 
-    <main class="container">
-        <span class="tagline">em breve</span>
+    <div id="loginView" class="login-container">
+        <h2 style="color: #D97B7B; font-size: 2rem;">VirtBook</h2>
+        <p>Acesse seu ambiente virtual.</p>
         
-        <h1>uma forma <span>totalmente nova</span> de promover igualdade digital nas escolas.</h1>
-        
-        <div class="info-panel">
-            é no dia <s>&nbsp;15&nbsp;</s>&nbsp;&nbsp;<s>&nbsp;18&nbsp;</s>&nbsp;&nbsp;19 de março, salve esse link
+        <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 20px;">
+            <button id="btnLogin" onclick="iniciarLogin()">Entrar com a Microsoft</button>
+            <button class="btn-secondary" onclick="abrirSuporte(false)">Suporte</button>
         </div>
-    </main>
 
+        <p class="txt-pequeno">Antes de usar o VirtBook, você precisa criar sua conta na Azure. <a href="#" onclick="abrirModalContas(event)">Saiba como clicando aqui.</a></p>
+        
+        <p id="statusFeedback" style="color: #b56c6c; font-weight: 500;"></p>
+        
+        <div id="setupTenant" class="setup-box hidden">
+            <h3 style="font-size: 1.1rem; color: #D97B7B;">Configuração Inicial</h3>
+            <p class="txt-pequeno">Identificamos que você está usando uma conta pessoal. Para que o VirtBook possa criar suas máquinas virtuais usando o <b>Azure for Students</b>, precisamos vincular o seu Diretório.</p>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                <button class="btn-secondary" style="font-size: 12px; padding: 8px 16px;" onclick="abrirLink('https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Overview')">Descobrir meu ID</button>
+                <button class="btn-secondary" style="font-size: 12px; padding: 8px 16px;" onclick="abrirLink(configApp.urlEncontrarTenant)">Como encontrar meu Tenant ID</button>
+            </div>
+
+            <input type="text" id="inputTenantId" placeholder="Cole seu Tenant ID aqui (Ex: 1234abcd-1234-...)">
+            <button onclick="salvarTenantEContinuar()" class="btn-success" style="width: 100%;">Salvar e Continuar</button>
+        </div>
+    </div>
+
+    <div id="appView" class="container">
+        <div class="flex-between">
+            <h2 style="margin: 0;">Olá, <span id="userNameDisplay" style="color: #D97B7B;"></span></h2>
+            <div class="nav-bar">
+                <button class="btn-secondary" onclick="abrirLink(configApp.urlManual)">Manual de Uso</button>
+                <button class="btn-secondary" onclick="abrirSuporte(false)">Suporte</button>
+                <button class="btn-danger" onclick="sair()">Sair</button>
+            </div>
+        </div>
+
+        <div class="card" style="text-align: center;">
+            <h3 style="margin-bottom: 10px;">Gestão de Custos e Créditos</h3>
+            <p class="txt-pequeno" style="margin-bottom: 20px;">Acompanhe seu saldo disponível, média de uso e previsão de consumo no painel oficial da Microsoft.</p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button class="btn-success" onclick="abrirLink('https://www.microsoftazuresponsorships.com/balance')">Ver Saldo - Conta de Estudante</button>
+                <button class="btn-success" onclick="abrirVisaoGeralAssinatura()">Análise de Custos - Demais Contas</button>
+            </div>
+        </div>
+
+        <div class="card hidden" id="cardCriar">
+            <h3>Criar Meu PC</h3>
+            <p class="txt-pequeno">Sua máquina não existe. Crie agora.</p>
+            
+            <div style="position: relative; margin: 8px 0 15px 0;">
+                <input type="password" id="vmPassword" placeholder="Escolha sua senha do Windows" style="margin: 0; padding-right: 45px;">
+                <span id="togglePassword" onclick="alternarSenha()" style="position: absolute; right: 15px; top: 12px; cursor: pointer; color: #D97B7B;">👁️</span>
+            </div>
+            
+            <p class="txt-pequeno" style="color: #888; margin-top: 0;">Deve ter 12-123 caracteres e conter 3 de 4: Maiúscula, Minúscula, Número, Especial.</p>
+            
+            <p class="txt-pequeno" style="margin-top: 20px; margin-bottom: 8px;">É necessário definir um horário diário de desligamento automático da máquina. O padrão é 03:30 AM. Caso queira definir outro horário, é só alterar abaixo.</p>
+            <input type="time" id="vmShutdownTime" value="03:30" style="max-width: 200px;">
+
+            <div style="margin-top: 20px;">
+                <button id="btnCreate" onclick="criarMaquina()">Criar Máquina <span id="loadCreate" class="hidden loader"></span></button>
+            </div>
+        </div>
+
+        <div class="card hidden" id="cardControles">
+            <h3>Meu PC: <span id="vmStatus" style="color: #D97B7B;">Verificando...</span></h3>
+            
+            <p class="txt-aviso" id="txtDesligamentoAuto" style="color: #D97B7B; font-weight: 500;"></p>
+            
+            <div class="vm-controls">
+                <button id="btnLigar" onclick="ligarMaquina()">Ligar <span id="loadLigar" class="hidden loader"></span></button>
+                <button id="btnDesligar" class="btn-danger" onclick="desligarMaquina()">Desligar (Pausar Cobrança) <span id="loadDesligar" class="hidden loader"></span></button>
+                <button id="btnRdp" class="btn-success" onclick="acessarAreaTrabalho()">Acessar Área de Trabalho</button>
+                <button id="btnExcluir" style="background-color: #4A3A3A;" onclick="excluirMaquina()">Excluir Máquina <span id="loadExcluir" class="hidden loader"></span></button>
+            </div>
+
+            <p class="txt-aviso hidden" style="margin-top: 25px;" id="txtPrimeiroUso">Sua máquina pode levar alguns minutos (de 10 a 15 min) para iniciar no primeiro uso.</p>
+            <p class="txt-aviso" style="margin-top: 10px;"><b>Desligue sua máquina sempre por aqui.</b> O desligamento pelo Windows não para a cobrança do uso.</p>
+        </div>
+    </div>
+
+    <div id="modalContas" class="modal hidden">
+        <div class="modal-content" style="text-align: center;">
+            <h3 style="color: #D97B7B;">Criar Conta Azure</h3>
+            <div style="display: flex; gap: 12px; justify-content: center; margin-top: 25px; flex-wrap: wrap;">
+                <button onclick="abrirLink(configApp.urlCriarContaEstudante)">Sou estudante</button>
+                <button onclick="abrirLink(configApp.urlCriarContaGeral)">Não sou estudante</button>
+            </div>
+            <button class="btn-secondary" style="margin-top: 25px;" onclick="fecharModais()">Fechar</button>
+        </div>
+    </div>
+
+    <div id="modalSuporte" class="modal hidden">
+        <div class="modal-content">
+            <h3 style="color: #D97B7B; margin-bottom: 5px;">Suporte VirtBook</h3>
+            <p id="ticketDisplay" style="font-weight: 700; color: #4A3A3A; font-size: 1.2rem;"></p>
+            <p class="txt-pequeno" style="font-weight: 500; color: #b56c6c; margin-bottom: 20px;">Anote este número de ticket antes de enviar.</p>
+            
+            <input type="text" id="supNome" placeholder="Nome">
+            <input type="text" id="supSobrenome" placeholder="Sobrenome">
+            <input type="email" id="supEmail" placeholder="E-mail de contato">
+            <input type="email" id="supEmailConf" placeholder="Confirmar E-mail">
+            
+            <textarea id="supDescricao" rows="4" placeholder="Descrição do problema"></textarea>
+            
+            <input type="file" id="supArquivo" accept="application/pdf, image/*" multiple style="background: transparent; border: none; padding: 0; margin-bottom: 5px;">
+            <p class="txt-pequeno" style="color: #888; margin-top: 0; margin-bottom: 15px;">Opcional. Até 3 arquivos (PDF ou imagem), máx. 5MB cada.</p>
+            
+            <p class="txt-pequeno" style="color: #4A3A3A; text-align: center; margin-bottom: 20px; font-weight: 500;">Caso prefira, nos envie um e-mail diretamente: <a href="mailto:projeto.virtbook@gmail.com">projeto.virtbook@gmail.com</a></p>
+            
+            <div style="display: flex; gap: 12px; margin-top: 25px; justify-content: center;">
+                <button id="btnEnviarSuporte" onclick="enviarSuporte()">Enviar</button>
+                <button class="btn-secondary" onclick="fecharModais()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalErro" class="modal hidden">
+        <div class="modal-content">
+            <h3 style="color: #b56c6c;">Ocorreu um Erro</h3>
+            <p class="txt-pequeno">Por favor, tire um print desta tela.</p>
+            <pre id="textoErro" style="background: rgba(255, 255, 255, 0.6); padding: 15px; border-radius: 12px; font-size: 11px; white-space: pre-wrap; word-break: break-all; margin-top: 15px; border: 1px solid rgba(217, 123, 123, 0.2);"></pre>
+            <div style="display: flex; gap: 12px; margin-top: 25px;">
+                <button onclick="abrirSuporte(true)">Enviar para o Suporte</button>
+                <button class="btn-secondary" onclick="fecharModais()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalAvaliacao" class="modal hidden">
+        <div class="modal-content" style="text-align: center;">
+            <h3 style="color: #D97B7B;">Avalie sua experiência</h3>
+            <p class="txt-pequeno">Está gostando do VirtBook? Sua avaliação nos move adiante!</p>
+            <div class="star-rating">
+                <span onclick="setAvaliacao(1)">★</span>
+                <span onclick="setAvaliacao(2)">★</span>
+                <span onclick="setAvaliacao(3)">★</span>
+                <span onclick="setAvaliacao(4)">★</span>
+                <span onclick="setAvaliacao(5)">★</span>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: center; margin-top: 25px;">
+                <button id="btnEnviarAvaliacao" disabled onclick="enviarAvaliacao()">Enviar Avaliação</button>
+                <button class="btn-secondary" onclick="fecharModais()">Agora não</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const configApp = {
+            clientId: "4b05dec0-b195-405d-90d2-990b44e36e4b",
+            urlManual: "https://danimcarv.github.io/virtbook/sites/manual-de-uso.html",
+            urlCriarContaEstudante: "https://danimcarv.github.io/virtbook/sites/como-criar-conta-estudante.html",
+            urlCriarContaGeral: "https://danimcarv.github.io/virtbook/sites/como-criar-conta-geral.html",
+            urlEncontrarTenant: "https://danimcarv.github.io/virtbook/sites/como-encontrar-meu-tenant-id.html",
+            urlBackendEmail: "https://formspree.io/f/xjgajdww",
+            urlAppsScript: "https://script.google.com/macros/s/AKfycbx6oDfkzKY4akI4ICtgKX7Ku_GyReYXbaySDrQ52iiD1-kMD7buzsBGaQnz-mmOApUm/exec",
+            rgName: "virtbook-rg",
+            vmName: "virtbook-vm",
+            location: "centralindia"
+        };
+
+        const msalConfig = {
+            auth: { clientId: configApp.clientId, authority: "https://login.microsoftonline.com/common", redirectUri: window.location.href.split('?')[0].split('#')[0] },
+            cache: { cacheLocation: "localStorage" }
+        };
+
+        const msalInstance = new msal.PublicClientApplication(msalConfig);
+        let contaAtual = null;
+        let tokenAzure = null;
+        let subId = null;
+        let ticketAtual = "";
+        let erroAtual = "";
+        let avaliacaoSelecionada = 0;
+
+        const templateJson = { "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#", "contentVersion": "1.0.0.0", "parameters": { "virtualMachineName1": { "type": "string" }, "adminUsername": { "type": "string", "defaultValue": "azureuser" }, "adminPassword": { "type": "secureString" }, "customImageId": { "type": "string", "defaultValue": "/subscriptions/0e179545-96ca-450a-afa3-ab585ce8bb46/resourceGroups/projeto-virtbook/providers/Microsoft.Compute/galleries/virtbook_img_gallery/images/virtbook_img_def_01" }, "location": { "type": "string", "defaultValue": "centralindia" }, "autoShutdownTime": { "type": "string", "defaultValue": "03:30" } }, "variables": { "nicName": "[concat(parameters('virtualMachineName1'), '-nic')]", "nsgName": "[concat(parameters('virtualMachineName1'), '-nsg')]", "vnetName": "[concat(parameters('virtualMachineName1'), '-vnet')]", "publicIpName": "[concat(parameters('virtualMachineName1'), '-ip')]", "subnetName": "default", "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]", "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('subnetName'))]", "scheduledShutdownTime": "[parameters('autoShutdownTime')]" }, "resources": [ { "name": "[variables('nicName')]", "type": "Microsoft.Network/networkInterfaces", "apiVersion": "2022-11-01", "location": "[parameters('location')]", "dependsOn": [ "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]", "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]", "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIpName'))]" ], "properties": { "ipConfigurations": [{ "name": "ipconfig1", "properties": { "subnet": { "id": "[variables('subnetRef')]" }, "privateIPAllocationMethod": "Dynamic", "publicIpAddress": { "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIpName'))]", "properties": { "deleteOption": "Delete" } } } }], "networkSecurityGroup": { "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]" } } }, { "name": "[variables('nsgName')]", "type": "Microsoft.Network/networkSecurityGroups", "apiVersion": "2020-05-01", "location": "[parameters('location')]", "properties": { "securityRules": [ { "name": "RDP-Port", "properties": { "priority": 300, "protocol": "TCP", "access": "Allow", "direction": "Inbound", "sourceAddressPrefix": "*", "sourcePortRange": "*", "destinationAddressPrefix": "*", "destinationPortRange": "3389" } } ] } }, { "name": "[variables('vnetName')]", "type": "Microsoft.Network/virtualNetworks", "apiVersion": "2024-10-01", "location": "[parameters('location')]", "properties": { "addressSpace": { "addressPrefixes": ["10.0.0.0/16"] }, "subnets": [{ "name": "default", "properties": { "addressPrefix": "10.0.0.0/24" } }] } }, { "name": "[variables('publicIpName')]", "type": "Microsoft.Network/publicIpAddresses", "apiVersion": "2023-06-01", "location": "[parameters('location')]", "sku": { "name": "Standard" }, "properties": { "publicIpAllocationMethod": "Static" } }, { "name": "[parameters('virtualMachineName1')]", "type": "Microsoft.Compute/virtualMachines", "apiVersion": "2024-03-01", "location": "[parameters('location')]", "dependsOn": [ "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]" ], "properties": { "hardwareProfile": { "vmSize": "Standard_E2as_v5" }, "storageProfile": { "osDisk": { "createOption": "fromImage", "managedDisk": { "storageAccountType": "Standard_LRS" }, "deleteOption": "Delete" }, "imageReference": { "id": "[parameters('customImageId')]" } }, "networkProfile": { "networkInterfaces": [{ "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]", "properties": { "deleteOption": "Delete" } }] }, "securityProfile": { "securityType": "TrustedLaunch", "uefiSettings": { "secureBootEnabled": true, "vTpmEnabled": true } }, "osProfile": { "computerName": "[parameters('virtualMachineName1')]", "adminUsername": "[parameters('adminUsername')]", "adminPassword": "[parameters('adminPassword')]" }, "licenseType": "Windows_Client" } }, { "type": "Microsoft.Compute/virtualMachines/extensions", "apiVersion": "2023-03-01", "name": "[concat(parameters('virtualMachineName1'), '/SetupVirtbook')]", "location": "[parameters('location')]", "dependsOn": [ "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName1'))]" ], "properties": { "publisher": "Microsoft.Compute", "type": "CustomScriptExtension", "typeHandlerVersion": "1.10", "autoUpgradeMinorVersion": true, "settings": { "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -Command \"Invoke-WebRequest -Uri ''https://github.com/winfsp/winfsp/releases/download/v2.1/winfsp-2.1.25156.msi'' -OutFile ''winfsp.msi''; Start-Process msiexec.exe -ArgumentList ''/i winfsp.msi /quiet /norestart'' -Wait; Invoke-WebRequest -Uri ''https://raw.githubusercontent.com/danimcarv/virtbook/refs/heads/main/resources/configurar_discos.bat'' -OutFile ''C:\\Users\\Public\\Desktop\\configurar_discos.bat'';\"')]" } } }, { "name": "[concat('shutdown-computevm-', parameters('virtualMachineName1'))]", "type": "Microsoft.DevTestLab/schedules", "apiVersion": "2018-09-15", "location": "[parameters('location')]", "dependsOn": [ "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName1'))]" ], "properties": { "status": "Enabled", "taskType": "ComputeVmShutdownTask", "dailyRecurrence": { "time": "[variables('scheduledShutdownTime')]" }, "timeZoneId": "E. South America Standard Time", "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName1'))]", "notificationSettings": { "status": "Disabled" } } } ] };
+
+        async function iniciarLogin() {
+            document.getElementById('statusFeedback').innerText = "";
+            document.getElementById('btnLogin').innerText = "Conectando...";
+            document.getElementById('btnLogin').disabled = true;
+            try {
+                const loginResponse = await msalInstance.loginPopup({ scopes: ["openid", "profile", "email"] });
+                contaAtual = loginResponse.account;
+                if (contaAtual.tenantId === "9188040d-6c67-4c5b-b112-36a304b66dad") {
+                    let savedTenant = localStorage.getItem("virtbook_tenant_id");
+                    if (!savedTenant) {
+                        document.getElementById('btnLogin').style.display = "none";
+                        document.getElementById('setupTenant').classList.remove('hidden');
+                        return; 
+                    } else {
+                        buscarTokenAzure(savedTenant);
+                    }
+                } else {
+                    buscarTokenAzure("common");
+                }
+            } catch (error) {
+                document.getElementById('btnLogin').innerText = "Entrar com a Microsoft";
+                document.getElementById('btnLogin').disabled = false;
+                document.getElementById('statusFeedback').innerText = "Erro ao logar. Tente novamente.";
+            }
+        }
+
+        function abrirLink(url) { window.open(url, '_blank'); }
+        
+        function abrirModalContas(e) {
+            e.preventDefault();
+            document.getElementById('modalContas').classList.remove('hidden');
+        }
+
+        function alternarSenha() {
+            const input = document.getElementById('vmPassword');
+            const icon = document.getElementById('togglePassword');
+            if (input.type === "password") {
+                input.type = "text";
+                icon.innerText = "🙈";
+            } else {
+                input.type = "password";
+                icon.innerText = "👁️";
+            }
+        }
+
+        function salvarTenantEContinuar() {
+            const inputVal = document.getElementById('inputTenantId').value.trim();
+            if (inputVal === "") { alert("Por favor, cole um ID válido."); return; }
+            localStorage.setItem("virtbook_tenant_id", inputVal);
+            document.getElementById('setupTenant').classList.add('hidden');
+            buscarTokenAzure(inputVal);
+        }
+
+        async function buscarTokenAzure(tenantId) {
+            const req = { scopes: ["https://management.azure.com/user_impersonation"], account: contaAtual, authority: `https://login.microsoftonline.com/${tenantId}` };
+            try {
+                const res = await msalInstance.acquireTokenSilent(req);
+                tokenAzure = res.accessToken;
+                iniciarApp();
+            } catch (e) {
+                try {
+                    const resInt = await msalInstance.acquireTokenPopup(req);
+                    tokenAzure = resInt.accessToken;
+                    iniciarApp();
+                } catch (err) {
+                    localStorage.removeItem("virtbook_tenant_id");
+                    document.getElementById('btnLogin').style.display = "block";
+                    document.getElementById('btnLogin').innerText = "Entrar com a Microsoft";
+                    document.getElementById('btnLogin').disabled = false;
+                    document.getElementById('setupTenant').classList.add('hidden');
+                    document.getElementById('statusFeedback').innerText = "Acesso negado à infraestrutura ou Tenant ID incorreto.";
+                }
+            }
+        }
+
+        async function chamadorApi(url, metodo, body = null, isPolling = false) {
+            const options = { method: metodo, headers: { 'Authorization': `Bearer ${tokenAzure}`, 'Content-Type': 'application/json' } };
+            if (body) options.body = JSON.stringify(body);
+            const res = await fetch(url, options);
+            if (!res.ok && res.status !== 404) {
+                const errText = await res.text();
+                throw new Error(`Erro HTTP ${res.status}: ${errText}`);
+            }
+            if (res.status === 404) return { is404: true };
+            if (res.status === 202 || res.status === 201) {
+                const asyncUrl = res.headers.get('Azure-AsyncOperation') || res.headers.get('Location');
+                if (asyncUrl && isPolling) return await aguardarPolling(asyncUrl);
+            }
+            const txt = await res.text();
+            let parsed = txt ? JSON.parse(txt) : {};
+            parsed.httpStatus = res.status;
+            return parsed;
+        }
+
+        async function aguardarPolling(url) {
+            while (true) {
+                await new Promise(r => setTimeout(r, 5000));
+                try {
+                    const res = await chamadorApi(url, 'GET');
+                    if (res.is404) return true;
+                    if (res.status === "Succeeded") return true;
+                    if (res.status === "Failed" || res.status === "Canceled") throw new Error("Operação falhou na Azure.");
+                    if (res.httpStatus === 200 || res.httpStatus === 204) {
+                        if (res.status === "InProgress" || res.status === "Running" || res.status === "Accepted") continue;
+                        return true;
+                    }
+                } catch(e) {
+                    if (e.message.includes("404")) return true;
+                    throw e;
+                }
+            }
+        }
+
+        async function iniciarApp() {
+            document.getElementById('loginView').style.display = "none";
+            document.getElementById('appView').style.display = "block";
+            document.getElementById('userNameDisplay').innerText = contaAtual.name;
+            try {
+                const subRes = await chamadorApi('https://management.azure.com/subscriptions?api-version=2020-01-01', 'GET');
+                subId = subRes.value[0].subscriptionId;
+                await verificarEstadoMaquina();
+            } catch (e) {
+                mostrarErro(e);
+            }
+        }
+
+        function sair() {
+            localStorage.removeItem("virtbook_tenant_id");
+            msalInstance.logoutPopup().then(() => { window.location.reload(); });
+        }
+
+        async function verificarEstadoMaquina() {
+            const url = `https://management.azure.com/subscriptions/${subId}/resourceGroups/${configApp.rgName}/providers/Microsoft.Compute/virtualMachines/${configApp.vmName}?$expand=instanceView&api-version=2024-03-01`;
+            const res = await chamadorApi(url, 'GET');
+            
+            document.getElementById('cardCriar').classList.add('hidden');
+            document.getElementById('cardControles').classList.add('hidden');
+            
+            if (res.is404) {
+                document.getElementById('cardCriar').classList.remove('hidden');
+            } else {
+                document.getElementById('cardControles').classList.remove('hidden');
+                const statuses = res.properties.instanceView.statuses;
+                let powerState = "";
+                for (let s of statuses) {
+                    if (s.code.startsWith('PowerState/')) powerState = s.code.split('/')[1];
+                }
+                
+                let isRunning = (powerState === 'running');
+                document.getElementById('vmStatus').innerText = isRunning ? "Ligada" : "Desligada";
+                document.getElementById('vmStatus').style.color = isRunning ? "#8ca885" : "#b56c6c";
+                
+                document.getElementById('btnLigar').disabled = isRunning;
+                document.getElementById('btnDesligar').disabled = !isRunning;
+                document.getElementById('btnRdp').disabled = !isRunning;
+                document.getElementById('btnExcluir').disabled = false;
+
+                if (localStorage.getItem('virtbook_first_use_' + configApp.vmName)) {
+                    document.getElementById('txtPrimeiroUso').classList.remove('hidden');
+                } else {
+                    document.getElementById('txtPrimeiroUso').classList.add('hidden');
+                }
+
+                try {
+                    const schedUrl = `https://management.azure.com/subscriptions/${subId}/resourceGroups/${configApp.rgName}/providers/Microsoft.DevTestLab/schedules/shutdown-computevm-${configApp.vmName}?api-version=2018-09-15`;
+                    const schedRes = await chamadorApi(schedUrl, 'GET');
+                    if (schedRes && schedRes.properties && schedRes.properties.dailyRecurrence) {
+                        document.getElementById('txtDesligamentoAuto').innerText = `Sua máquina desliga automaticamente todos os dias às ${schedRes.properties.dailyRecurrence.time.slice(0, 2)}:${schedRes.properties.dailyRecurrence.time.slice(2)}.`;
+                    }
+                } catch(e) {
+                    document.getElementById('txtDesligamentoAuto').innerText = "Sua máquina desliga automaticamente todos os dias às 03:30.";
+                }
+            }
+        }
+
+        function validarSenha(s) {
+            if (s.length < 12 || s.length > 123) return false;
+            let c = 0;
+            if (/[a-z]/.test(s)) c++;
+            if (/[A-Z]/.test(s)) c++;
+            if (/\d/.test(s)) c++;
+            if (/[^a-zA-Z\d]/.test(s)) c++;
+            return c >= 3;
+        }
+
+        async function criarMaquina() {
+            const pwd = document.getElementById('vmPassword').value;
+            const sTime = document.getElementById('vmShutdownTime').value || "03:30";
+            
+            if (!validarSenha(pwd)) { alert("A senha não atende aos requisitos de complexidade da Azure."); return; }
+            
+            toggleLoader(true, 'loadCreate');
+            
+            try {
+                const rgUrl = `https://management.azure.com/subscriptions/${subId}/resourcegroups/${configApp.rgName}?api-version=2021-04-01`;
+                await chamadorApi(rgUrl, 'PUT', { location: configApp.location });
+
+                const paramJson = { "virtualMachineName1": { "value": configApp.vmName }, "adminPassword": { "value": pwd }, "autoShutdownTime": { "value": sTime } };
+                const deployUrl = `https://management.azure.com/subscriptions/${subId}/resourcegroups/${configApp.rgName}/providers/Microsoft.Resources/deployments/virtbook-deploy?api-version=2021-04-01`;
+                await chamadorApi(deployUrl, 'PUT', { properties: { mode: "Incremental", template: templateJson, parameters: paramJson } }, true);
+                
+                document.getElementById('vmPassword').value = "";
+                localStorage.setItem('virtbook_first_use_' + configApp.vmName, 'true');
+                await verificarEstadoMaquina();
+            } catch (e) { mostrarErro(e); }
+            finally { 
+                toggleLoader(false, 'loadCreate');
+                document.getElementById('btnCreate').disabled = false;
+            }
+        }
+
+        async function ligarMaquina() {
+            toggleLoader(true, 'loadLigar');
+            try {
+                const url = `https://management.azure.com/subscriptions/${subId}/resourceGroups/${configApp.rgName}/providers/Microsoft.Compute/virtualMachines/${configApp.vmName}/start?api-version=2024-03-01`;
+                await chamadorApi(url, 'POST', null, true);
+                localStorage.removeItem('virtbook_first_use_' + configApp.vmName);
+                await verificarEstadoMaquina();
+
+                let count = parseInt(localStorage.getItem('virtbook_ligar_count_' + configApp.vmName) || "0");
+                count++;
+                localStorage.setItem('virtbook_ligar_count_' + configApp.vmName, count);
+
+                if (!localStorage.getItem('virtbook_evaluated_' + configApp.vmName) && count % 3 === 0) {
+                    document.getElementById('modalAvaliacao').classList.remove('hidden');
+                }
+
+            } catch (e) { mostrarErro(e); }
+            finally { toggleLoader(false, 'loadLigar'); }
+        }
+
+        async function desligarMaquina() {
+            if (!localStorage.getItem('virtbook_first_desligar_' + configApp.vmName) && !localStorage.getItem('virtbook_evaluated_' + configApp.vmName)) {
+                document.getElementById('modalAvaliacao').classList.remove('hidden');
+                localStorage.setItem('virtbook_first_desligar_' + configApp.vmName, 'true');
+            }
+            toggleLoader(true, 'loadDesligar');
+            try {
+                const url = `https://management.azure.com/subscriptions/${subId}/resourceGroups/${configApp.rgName}/providers/Microsoft.Compute/virtualMachines/${configApp.vmName}/deallocate?api-version=2024-03-01`;
+                await chamadorApi(url, 'POST', null, true);
+                await verificarEstadoMaquina();
+            } catch (e) { mostrarErro(e); }
+            finally { toggleLoader(false, 'loadDesligar'); }
+        }
+
+        async function acessarAreaTrabalho() {
+            try {
+                const url = `https://management.azure.com/subscriptions/${subId}/resourceGroups/${configApp.rgName}/providers/Microsoft.Network/publicIPAddresses/${configApp.vmName}-ip?api-version=2023-06-01`;
+                const res = await chamadorApi(url, 'GET');
+                const ip = res.properties.ipAddress;
+                const rdpContent = `auto connect:i:1\nfull address:s:${ip}\nusername:s:azureuser`;
+                const blob = new Blob([rdpContent], { type: 'application/x-rdp' });
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = `${configApp.vmName}.rdp`;
+                link.click();
+            } catch (e) { mostrarErro(e); }
+        }
+
+        async function excluirMaquina() {
+            if (!confirm("Isso apagará todos os dados da máquina definitivamente. Continuar?")) return;
+            toggleLoader(true, 'loadExcluir');
+            try {
+                const url = `https://management.azure.com/subscriptions/${subId}/resourcegroups/${configApp.rgName}?api-version=2021-04-01`;
+                await chamadorApi(url, 'DELETE', null, true);
+                alert("Máquina deletada com sucesso.");
+                await verificarEstadoMaquina();
+            } catch (e) { mostrarErro(e); }
+            finally { toggleLoader(false, 'loadExcluir'); }
+        }
+
+        function toggleLoader(show, loaderId) {
+            if (show) {
+                document.getElementById('btnLigar').disabled = true;
+                document.getElementById('btnDesligar').disabled = true;
+                document.getElementById('btnExcluir').disabled = true;
+                if(loaderId) document.getElementById(loaderId).classList.remove('hidden');
+            } else {
+                if(loaderId) document.getElementById(loaderId).classList.add('hidden');
+            }
+        }
+
+        function mostrarErro(err) {
+            erroAtual = err.toString();
+            document.getElementById('textoErro').innerText = erroAtual;
+            document.getElementById('modalErro').classList.remove('hidden');
+        }
+
+        function abrirSuporte(deErro) {
+            fecharModais();
+            gerarTicket();
+            document.getElementById('modalSuporte').classList.remove('hidden');
+            if (deErro) {
+                document.getElementById('supDescricao').classList.add('hidden');
+            } else {
+                erroAtual = "";
+                document.getElementById('supDescricao').classList.remove('hidden');
+                document.getElementById('supDescricao').value = "";
+            }
+        }
+
+        function fecharModais() {
+            document.getElementById('modalSuporte').classList.add('hidden');
+            document.getElementById('modalContas').classList.add('hidden');
+            document.getElementById('modalErro').classList.add('hidden');
+            document.getElementById('modalAvaliacao').classList.add('hidden');
+            const btn = document.getElementById('btnEnviarSuporte');
+            if(btn) {
+                btn.disabled = false;
+                btn.innerText = "Enviar";
+            }
+        }
+
+        function gerarTicket() {
+            const d = new Date();
+            const pad = (n) => n.toString().padStart(2, '0');
+            const strData = `${pad(d.getDate())}${pad(d.getMonth()+1)}${d.getFullYear().toString().slice(-2)}`;
+            const sumSecs = (d.getHours() * 3600) + (d.getMinutes() * 60) + d.getSeconds();
+            const cents = pad(Math.floor(d.getMilliseconds() / 10));
+            ticketAtual = `${strData}-${sumSecs}-${cents}`;
+            document.getElementById('ticketDisplay').innerText = `Ticket: ${ticketAtual}`;
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        async function enviarSuporte() {
+            const n = document.getElementById('supNome').value.trim();
+            const sn = document.getElementById('supSobrenome').value.trim();
+            const e = document.getElementById('supEmail').value.trim();
+            const ec = document.getElementById('supEmailConf').value.trim();
+            const desc = erroAtual ? erroAtual : document.getElementById('supDescricao').value.trim();
+            const arquivos = document.getElementById('supArquivo').files;
+            const btn = document.getElementById('btnEnviarSuporte');
+
+            if (!n || !sn || !e || !ec || !desc) { alert("Preencha todos os campos."); return; }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(e)) { alert("E-mail inválido."); return; }
+            if (e !== ec) { alert("Os e-mails não conferem."); return; }
+            
+            if (arquivos.length > 3) { alert("Você pode anexar no máximo 3 arquivos."); return; }
+
+            for (let i = 0; i < arquivos.length; i++) {
+                if (arquivos[i].size > 5 * 1024 * 1024) {
+                    alert("Os arquivos devem ter no máximo 5MB cada.");
+                    return;
+                }
+                if (!arquivos[i].type.startsWith('image/') && arquivos[i].type !== 'application/pdf') {
+                    alert("Formato de arquivo inválido.");
+                    return;
+                }
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Enviando...";
+
+            let linkArquivos = "sem_arquivos";
+
+            if (arquivos.length > 0) {
+                let base64Files = [];
+                for (let i = 0; i < arquivos.length; i++) {
+                    base64Files.push({
+                        name: arquivos[i].name,
+                        mimeType: arquivos[i].type,
+                        base64: await fileToBase64(arquivos[i])
+                    });
+                }
+
+                try {
+                    const gasRes = await fetch(configApp.urlAppsScript, {
+                        method: 'POST',
+                        body: JSON.stringify({ ticket: ticketAtual, files: base64Files })
+                    });
+                    const gasData = await gasRes.json();
+                    linkArquivos = gasData.folderUrl || "erro_ao_gerar_link";
+                } catch (err) {
+                    linkArquivos = "erro_de_conexao_com_drive";
+                }
+            }
+
+            const payload = { 
+                title: `Ticket ${ticketAtual}`, 
+                nome: n, 
+                sobrenome: sn, 
+                email: e, 
+                descricao: desc,
+                link_arquivos: linkArquivos
+            };
+            
+            enviarEmailBackend(payload);
+
+            alert("Ticket enviado com sucesso! Guarde o seu número: " + ticketAtual);
+            fecharModais();
+        }
+
+        function setAvaliacao(v) {
+            avaliacaoSelecionada = v;
+            const stars = document.querySelectorAll('.star-rating span');
+            stars.forEach((s, i) => { s.style.color = i < v ? '#D97B7B' : 'rgba(217, 123, 123, 0.3)'; });
+            document.getElementById('btnEnviarAvaliacao').disabled = false;
+        }
+
+        function enviarAvaliacao() {
+            localStorage.setItem('virtbook_evaluated_' + configApp.vmName, 'true');
+            enviarEmailBackend({ title: `Nova avaliação: ${avaliacaoSelecionada} estrelas`, avaliacao: avaliacaoSelecionada });
+            fecharModais();
+        }
+
+        function abrirVisaoGeralAssinatura() {
+            if (subId) {
+                const url = `https://portal.azure.com/#resource/subscriptions/${subId}/overview`;
+                window.open(url, '_blank');
+            } else {
+                alert("Sua assinatura ainda está sendo carregada. Aguarde alguns segundos e tente novamente.");
+            }
+        }
+
+        function enviarEmailBackend(dados) {
+            fetch(configApp.urlBackendEmail, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify(dados)
+            }).catch(e => console.log(e));
+        }
+    </script>
 </body>
 </html>
