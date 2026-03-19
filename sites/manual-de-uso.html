@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VirtBook - Manual de Uso</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background-color: #F7F3E8; color: #4A3A3A; line-height: 1.6; padding: 40px 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header-title { text-align: center; color: #D97B7B; font-weight: 700; font-size: 2.5rem; margin-bottom: 40px; }
+        .card { background: rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 35px 40px; box-shadow: 0 4px 15px rgba(220, 150, 150, 0.05); margin-bottom: 30px; }
+        h2 { color: #D97B7B; font-weight: 700; margin-bottom: 20px; font-size: 1.6rem; border-bottom: 2px solid rgba(217, 123, 123, 0.2); padding-bottom: 10px; }
+        h3 { color: #4A3A3A; font-weight: 700; margin-top: 25px; margin-bottom: 10px; font-size: 1.2rem; }
+        p { font-weight: 300; margin-bottom: 15px; font-size: 1.05rem; }
+        strong { font-weight: 500; color: #333; }
+        ul, ol { margin-left: 25px; margin-bottom: 20px; font-weight: 300; font-size: 1.05rem; }
+        li { margin-bottom: 10px; }
+        a { color: #D97B7B; font-weight: 500; text-decoration: none; transition: color 0.2s; }
+        a:hover { color: #c46a6a; }
+        
+        .print-img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin: 25px 0;
+            display: block;
+        }
+        
+        .alert-box { background: rgba(217, 123, 123, 0.05); border-left: 6px solid #D97B7B; padding: 25px; border-radius: 0 16px 16px 0; margin: 35px 0; }
+        .alert-box h3 { color: #D97B7B; margin-top: 0; margin-bottom: 15px; }
+        
+        .btn-stores { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 20px; align-items: center; }
+        .btn-store-img { transition: transform 0.2s; cursor: pointer; display: block; width: auto; }
+        .btn-store-img:hover { transform: translateY(-2px); }
+        
+        .app-store-img { height: 44px; }
+        .play-store-img { height: 58px; margin-left: -10px; }
+        
+        .footer-note { text-align: center; margin-top: 50px; padding: 30px; background: rgba(217, 123, 123, 0.1); border-radius: 20px; }
+        .footer-note h2 { border: none; margin-bottom: 10px; }
+        .footer-note p { margin-bottom: 0; }
+
+        @media (max-width: 600px) {
+            .card { padding: 25px 20px; }
+            .header-title { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <h1 class="header-title">Manual de Uso - VirtBook</h1>
+
+        <div class="card">
+            <h2>Criando o seu PC</h2>
+            <p>Ao realizar o primeiro login no aplicativo, você estará na tela abaixo:</p>
+            
+            <img src="https://danimcarv.github.io/virtbook/img/print1.png" class="print-img">
+            
+            <p>Para criar seu PC, siga as instruções abaixo:</p>
+            <ol>
+                <li>Escolha uma <strong>senha forte</strong> para o seu login do Windows. Sua senha deve conter pelo menos 12 caracteres, e dentre os 4 seguintes tipos de caractere, <strong>pelo menos 3 devem estar presentes:</strong> Maiúsculas, Minúsculas, Números, Caracteres especiais. Você pode visualizar sua senha clicando no ícone de ‘olho’, e ocultar ela novamente clicando no botão de ocultar.</li>
+                <li>O seu PC <strong>desligará todos os dias em um horário pré-definido</strong>. Isso é necessário, pois em caso de esquecer o computador ligado, os custos gerados poderiam consumir seu saldo da Azure indefinidamente. O horário padrão de desligamento é todos os dias às 03:30 da manhã, mas caso queira, você pode alterar no campo correspondente.</li>
+                <li>Ao clicar em <strong>Criar Máquina</strong>, sua máquina começará a ser criada. Note que esse processo normalmente leva alguns minutos, and o app atualizará sua tela assim que finalizar.</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h2>Primeiro acesso ao PC</h2>
+            <p>Logo que seu PC for criado, sua tela se parecerá com a imagem abaixo:</p>
+            
+            <img src="https://danimcarv.github.io/virtbook/img/print2.png" class="print-img">
+            
+            <p>Para se conectar ao PC, clique em <strong>Acessar Área de Trabalho</strong>.</p>
+            <p>Sempre que desejar se conectar ao computador, você pode clicar nesse botão. Ele fará o download de arquivo que você irá usar para conectar.</p>
+
+            <div class="alert-box">
+                <h3>Importante!</h3>
+                <p>Para usar sua máquina em celulares ou tablets, você precisa antes baixar o aplicativo oficial da Microsoft, o <strong>Windows App</strong>. Do contrário, o arquivo baixado pelo VirtBook não irá abrir.</p>
+                <p>Caso ainda não tenha o Windows App baixado, clique abaixo para instalar:</p>
+                <div class="btn-stores">
+                    <a href="https://play.google.com/store/apps/details?id=com.microsoft.rdc.androidx" target="_blank">
+                        <img src="https://play.google.com/intl/en_us/badges/static/images/badges/pt-br_badge_web_generic.png" alt="Disponível no Google Play" class="btn-store-img play-store-img">
+                    </a>
+                    <a href="https://apps.apple.com/br/app/windows-app/id714464092" target="_blank">
+                        <img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/pt-br?size=250x83&releaseDate=1276560000" alt="Baixar na App Store" class="btn-store-img app-store-img">
+                    </a>
+                </div>
+            </div>
+
+            <p>No primeiro uso da máquina, serão exibidos alguns avisos de certificado e de confiabilidade.</p>
+            <p>Certifique-se de marcar as caixas de <strong>“Não mostrar novamente”</strong> e de confirmar a conexão.</p>
+            
+            <img src="https://danimcarv.github.io/virtbook/img/print3.png" class="print-img">
+            <img src="https://danimcarv.github.io/virtbook/img/print4.png" class="print-img">
+            
+            <p>Quando for solicitado, insira a <strong>senha do Windows</strong> que você escolheu durante a criação da máquina.</p>
+            <p>No primeiro login, o sistema pode demorar um pouco para iniciar (de 10 a 15 minutos). <strong>Isso é normal e só ocorre no primeiro uso da máquina.</strong></p>
+            <p>O Windows exibirá uma tela pedindo para você selecionar as configurações de privacidade que deseja manter. Para maior segurança, recomendamos <strong>desmarcar todas</strong>.</p>
+            
+            <img src="https://danimcarv.github.io/virtbook/img/print5.png" class="print-img">
+        </div>
+
+        <div class="card">
+            <h2>Ligando e desligando sua máquina</h2>
+            <p>No app, você encontra um botão de ligar, e outro de desligar.</p>
+            <p>É importante ter em mente que <strong>essa é a forma correta de ligar e desligar sua máquina</strong>. Mesmo que você desligue pelo Windows, a Azure continuará debitando do seu saldo devido a como a plataforma funciona.</p>
+            <p>Sendo assim, para evitar desperdício de saldo, <strong>use sempre o botão de Desligar do VirtBook</strong> para desligar sua máquina.</p>
+        </div>
+
+        <div class="card">
+            <h2>Excluindo sua máquina</h2>
+            <p>Caso não deseje mais usar a máquina, você encontra no app um botão de <strong>Excluir Máquina</strong>.</p>
+            <p>Tenha em mente que <strong>todos os seus dados serão perdidos e que essa ação é irreversível</strong>.</p>
+            <p>Ao clicar no botão, sua máquina será excluída permanentemente. Após a exclusão, o app voltará à mesma tela do primeiro uso.</p>
+        </div>
+
+        <div class="card">
+            <h2>Gestão de Custos e Créditos</h2>
+            <p>No app você também encontra um atalho para a tela da Microsoft onde você pode verificar como está indo o consumo do seu saldo.</p>
+            <p>Se sua conta é de estudante, clique em <strong>Ver Saldo - Conta de Estudante</strong>. Caso sua conta não seja de estudante, clique em <strong>Análise de Custos - Demais Contas</strong>.</p>
+        </div>
+
+        <div class="card">
+            <h2>Abrindo um ticket para o Suporte</h2>
+            <p>Encontrou algum bug? Sem problemas, a gente resolve.</p>
+            <p>Clique no botão de <strong>Suporte</strong> no topo da tela, e o formulário abaixo será exibido:</p>
+            
+            <img src="https://danimcarv.github.io/virtbook/img/print6.png" class="print-img">
+            
+            <p>Antes de tudo, <strong>anote o número do ticket</strong>. Essa será a nossa referência para tratarmos do problema.</p>
+            <p>Preencha com seu nome e sobrenome, e-mail, repita novamente o e-mail, e explique na descrição o que está ocorrendo com o <strong>maior nível de detalhes possível</strong>.</p>
+            <p><strong>Lembre-se:</strong> quanto mais detalhes, mais fácil fica para a gente poder te ajudar.</p>
+            <p>Você também pode anexar arquivos ou prints de tela. São permitidos <strong>até 3 arquivos, de imagem ou PDF, com no máximo 5MB de tamanho cada</strong>.</p>
+            <p>Clique em <strong>Enviar</strong> e teremos todo o prazer em te ajudar.</p>
+            <p>Caso prefira, nos envie um e-mail diretamente: <a href="mailto:projeto.virtbook@gmail.com">projeto.virtbook@gmail.com</a></p>
+        </div>
+
+        <div class="card">
+            <h2>Saindo do app</h2>
+            <p>No topo você também encontra o botão de <strong>Sair</strong>. Você pode usar ele para desconectar sua conta.</p>
+            <p>Esse botão limpa os dados locais armazenados na aplicação.</p>
+            <p>O uso desse botão <strong>não é necessário no dia-a-dia</strong>, a menos que você queira remover suas credenciais. Por exemplo, se quiser mudar o dispositivo no qual usa o VirtBook normalmente.</p>
+        </div>
+
+        <div class="card">
+            <h2>Adicionando armazenamento extra à sua máquina (Opcional)</h2>
+            <p>Por padrão, sua máquina vem com <strong>127GB de disco</strong>.</p>
+            <p>Pensando em ampliar as possibilidades de uso dos nossos usuários, criamos uma função opcional para adicionar <strong>gratuitamente</strong> discos do Mega e do Google Drive na máquina.</p>
+            <p>O funcionamento é simples: Você cria uma conta nova do Mega e/ou do Google Drive, e o espaço em nuvem da conta é convertido em um disco de armazenamento extra no seu PC do VirtBook. Legal, né?</p>
+            <p>Essa etapa é totalmente opcional, mas pode garantir <strong>35GB a mais de armazenamento na máquina</strong>: 20GB do Mega, e 15GB do Google.</p>
+            <p>Caso queira seguir, <strong>crie uma conta totalmente nova</strong> nos serviços usando os links abaixo:</p>
+            <ul>
+                <li>Mega: <a href="https://mega.nz/register" target="_blank">mega.nz/register</a></li>
+                <li>Google Drive: <a href="https://accounts.google.com/signup" target="_blank">accounts.google.com/signup</a></li>
+            </ul>
+            <p>Para configurar, deixamos na sua Área de Trabalho um arquivo chamado <strong>configurar_discos</strong>. Ele vai abrir uma “tela preta”, como nos computadores antigos, que vai te guiar pelo processo.</p>
+            <p>Basta ir digitando as informações solicitadas e apertando Enter.</p>
+            
+            <img src="https://danimcarv.github.io/virtbook/img/print7.png" class="print-img">
+            
+            <p>Ao final do processo, serão criados os discos <strong>M: para o Mega</strong>, e/ou <strong>G: para o Google Drive</strong>. Interessante também lembrar que os arquivos que estiverem nesses discos também ficarão disponíveis na sua conta online do Mega ou do Google Drive.</p>
+            
+            <img src="https://danimcarv.github.io/virtbook/img/print8.png" class="print-img">
+            
+            <p>Os discos estarão sempre disponíveis na máquina ao ligar. <strong>Não é necessária nenhuma configuração adicional fora as anteriores.</strong></p>
+        </div>
+
+        <div class="footer-note">
+            <h2>Dúvidas? Elogios? Sugestões?</h2>
+            <p>Caso queira entrar em contato conosco, sinta-se livre para usar o mesmo formulário de Suporte, ou nos enviar um e-mail: <a href="mailto:projeto.virtbook@gmail.com">projeto.virtbook@gmail.com</a></p>
+            <p style="margin-top: 15px; font-weight: 500;">Obrigado por fazer parte do nosso projeto. Com carinho, time VirtBook ❤️</p>
+        </div>
+
+    </div>
+
+</body>
+</html>
