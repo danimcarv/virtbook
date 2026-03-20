@@ -306,7 +306,7 @@
             document.getElementById('loginView').style.display = "none";
             document.getElementById('appView').style.display = "block";
             document.getElementById('userNameDisplay').innerText = "Aluno";
-            subId = "SUB_ID_PONTE"; // Máscara para as funções construírem a URL
+            subId = "SUB_ID_PONTE"; 
             try {
                 await verificarEstadoMaquina();
             } catch (e) {
@@ -530,10 +530,12 @@
                 
                 let selectedVmSize = isPersonalAccount ? "Standard_E2as_v5" : "Standard_E2s_v3";
                 let selectedLocation = isPersonalAccount ? "centralindia" : "eastus";
+                let selectedZone = isPersonalAccount ? null : "3";
                 
                 if (webhookUrlSalva) {
                     selectedVmSize = "Standard_E2s_v3";
                     selectedLocation = "eastus";
+                    selectedZone = "3";
                 }
 
                 const rgUrl = webhookUrlSalva ? 
@@ -541,6 +543,18 @@
                     `https://management.azure.com/subscriptions/${subId}/resourcegroups/${configApp.rgName}?api-version=2021-04-01`;
                 
                 await chamadorApi(rgUrl, 'PUT', { location: selectedLocation });
+
+                // Injeção de Zona Dinâmica
+                const vmResource = templateJson.resources.find(r => r.type === "Microsoft.Compute/virtualMachines");
+                const ipResource = templateJson.resources.find(r => r.type === "Microsoft.Network/publicIpAddresses");
+                
+                if (selectedZone) {
+                    vmResource.zones = [selectedZone];
+                    ipResource.zones = [selectedZone];
+                } else {
+                    delete vmResource.zones;
+                    delete ipResource.zones;
+                }
 
                 const paramJson = { 
                     "virtualMachineName1": { "value": configApp.vmName }, 
