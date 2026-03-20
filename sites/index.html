@@ -55,6 +55,25 @@
   gtag('config', 'AW-17939978029');
 </script>
 
+<!-- Event snippet for Login conversion page
+In your html page, add the snippet and call gtag_report_conversion when someone clicks on the chosen link or button. -->
+<script>
+function gtag_report_conversion(url) {
+  var callback = function () {
+    if (typeof(url) != 'undefined') {
+      window.location = url;
+    }
+  };
+  gtag('event', 'conversion', {
+      'send_to': 'AW-17939978029/iSxsCKfNxIwcEK2uuepC',
+      'value': 0.2,
+      'currency': 'BRL',
+      'event_callback': callback
+  });
+  return false;
+}
+</script>
+
 <body>
 
     <div id="loginView" class="login-container">
@@ -66,7 +85,7 @@
         <p>Acesse seu ambiente virtual.</p>
         
         <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 20px;">
-            <button id="btnLogin" onclick="iniciarLogin()">Entrar com a Microsoft</button>
+            <button id="btnLogin" onclick="gtag_report_conversion(); iniciarLogin()">Entrar com a Microsoft</button>
             <button class="btn-secondary" onclick="abrirSuporte(false)">Suporte</button>
         </div>
 
