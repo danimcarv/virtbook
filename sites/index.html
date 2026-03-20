@@ -497,6 +497,7 @@
                 try {
                     const res = await chamadorApi(url, 'GET');
                     
+                    // Se der 404 na exclusão, significa que sumiu de verdade! (Sucesso)
                     if (res.is404) {
                         if (isDeployment) {
                             tentativas404++;
@@ -517,7 +518,8 @@
                         throw new Error(`A operação falhou na Azure (Estado: ${state}).\nResposta completa do servidor:\n${JSON.stringify(res, null, 2)}`);
                     }
 
-                    if (state === "InProgress" || state === "Running" || state === "Accepted" || state === "Creating" || state === "Updating") {
+                    // AQUI ESTÁ A CORREÇÃO: "Deleting" adicionado para a tela continuar carregando
+                    if (state === "InProgress" || state === "Running" || state === "Accepted" || state === "Creating" || state === "Updating" || state === "Deleting") {
                         continue;
                     }
 
