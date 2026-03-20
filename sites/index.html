@@ -48,8 +48,10 @@
 
     <div id="loginView" class="login-container">
         <h2 style="color: #D97B7B; font-size: 2rem;">VirtBook</h2>
-        <p style="color: #DC143C">No momento estamos enfrentando problemas no login para algumas instituições, como as ETECs do Estado de SP.
-        <br>Já estamos trabalhando na solução. Pedimos desculpas pelo transtorno.</p>
+
+        <p id="avisos" style="color: #8ca885">O problema anterior de autenticação em determinadas instituições foi solucionado.
+        <br>Agradecemos pela paciência.</p>
+
         <p>Acesse seu ambiente virtual.</p>
         
         <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 20px;">
@@ -59,6 +61,10 @@
 
         <p class="txt-pequeno">Antes de usar o VirtBook, você precisa criar sua conta na Azure. <a href="#" onclick="abrirModalContas(event)">Saiba como clicando aqui.</a></p>
         
+        <p id="avisoPopup" class="txt-pequeno" style="color: #b56c6c; font-weight: 500; margin-top: 15px;">
+            ⚠️ Se a janela da Microsoft travar pedindo "Aprovação do Administrador", feche ela e retorne para essa tela.<br><a href="#" onclick="event.preventDefault(); fecharModais(); document.getElementById('modalBloqueioTI').classList.remove('hidden');">Saiba o que fazer nesse caso.</a>
+        </p>
+
         <p id="statusFeedback" style="color: #b56c6c; font-weight: 500;"></p>
         
         <div id="setupTenant" class="setup-box hidden">
@@ -89,8 +95,8 @@
             <h3 style="margin-bottom: 10px;">Gestão de Custos e Créditos</h3>
             <p class="txt-pequeno" style="margin-bottom: 20px;">Acompanhe seu saldo disponível, média de uso e previsão de consumo no painel oficial da Microsoft.</p>
             <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                <button class="btn-success" onclick="abrirLink('https://www.microsoftazuresponsorships.com/balance')">Ver Saldo - Conta de Estudante</button>
-                <button class="btn-success" onclick="abrirVisaoGeralAssinatura()">Análise de Custos - Demais Contas</button>
+                <button class="btn-success" onclick="abrirLink('https://portal.azure.com/#view/Microsoft_Azure_CostManagement/Menu/~/paymentmethods')">Ver Saldo Restante</button>
+                <button class="btn-success" onclick="window.open(`https://portal.azure.com/#resource/subscriptions/${subId}/overview`, '_blank')">Análise e Previsão de Gastos</button>
             </div>
         </div>
 
@@ -130,6 +136,24 @@
         </div>
     </div>
 
+    <div id="modalBloqueioTI" class="modal hidden">
+        <div class="modal-content" style="text-align: center;">
+            <h3 style="color: #b56c6c; margin-bottom: 15px;">Bloqueio Institucional</h3>
+            <p class="txt-pequeno" style="text-align: left; margin-bottom: 15px; font-size: 13px;">Se a janela da Microsoft travar pedindo "Aprovação do Administrador", isso significa que a sua instituição bloqueou o uso de aplicativos externos no seu e-mail educacional.</p>
+            <p class="txt-pequeno" style="text-align: left; margin-bottom: 15px; font-size: 13px;">Para resolver isso e usar o VirtBook, você precisa preparar o seu ambiente de forma manual, instalando uma ponte de comunicação na sua Azure e colando a URL de acesso no campo abaixo.</p>
+            <p class="txt-pequeno" style="text-align: left; margin-bottom: 25px; font-size: 13px;">Siga o nosso <a href="#" onclick="abrirLink(configApp.urlPassoAPassoPonte); return false;">passo a passo de configuração da ponte</a>.</p>
+            
+            <div style="margin-top: 20px; text-align: left;">
+                <input type="text" id="inputWebhookUrl" placeholder="Cole a sua URL de acesso aqui (Ex: https://prod-12.eastus...)">
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: center; margin-top: 15px; flex-wrap: wrap;">
+                <button class="btn-secondary" onclick="salvarWebhookELogar()">Finalizar configuração</button>
+                <button class="btn-secondary" style="border: none; background: transparent; color: #888;" onclick="fecharModais()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modalContas" class="modal hidden">
         <div class="modal-content" style="text-align: center;">
             <h3 style="color: #D97B7B;">Criar Conta Azure</h3>
@@ -157,7 +181,7 @@
             <input type="file" id="supArquivo" accept="application/pdf, image/*" multiple style="background: transparent; border: none; padding: 0; margin-bottom: 5px;">
             <p class="txt-pequeno" style="color: #888; margin-top: 0; margin-bottom: 15px;">Opcional. Até 3 arquivos (PDF ou imagem), máx. 5MB cada.</p>
             
-            <p class="txt-pequeno" style="color: #4A3A3A; text-align: center; margin-bottom: 20px; font-weight: 500;">Caso prefira, nos envie um e-mail diretamente: <a href="mailto:projeto.virtbook@gmail.com">projeto.virtbook@gmail.com</a></p>
+            <p id="txtSuporteEmail" class="txt-pequeno" style="color: #4A3A3A; text-align: center; margin-bottom: 20px; font-weight: 500;">Caso prefira, nos envie um e-mail diretamente: <a href="mailto:projeto.virtbook@gmail.com">projeto.virtbook@gmail.com</a></p>
             
             <div style="display: flex; gap: 12px; margin-top: 25px; justify-content: center;">
                 <button id="btnEnviarSuporte" onclick="enviarSuporte()">Enviar</button>
@@ -170,7 +194,7 @@
         <div class="modal-content">
             <h3 style="color: #b56c6c;">Ocorreu um Erro</h3>
             <p class="txt-pequeno">Por favor, tire um print desta tela.</p>
-            <pre id="textoErro" style="background: rgba(255, 255, 255, 0.6); padding: 15px; border-radius: 12px; font-size: 11px; white-space: pre-wrap; word-break: break-all; margin-top: 15px; border: 1px solid rgba(217, 123, 123, 0.2);"></pre>
+            <pre id="textoErro" style="background: rgba(255, 255, 255, 0.6); padding: 15px; border-radius: 12px; font-size: 11px; white-space: pre-wrap; word-break: break-all; margin-top: 15px; border: 1px solid rgba(217, 123, 123, 0.2); max-height: 300px; overflow-y: auto;"></pre>
             <div style="display: flex; gap: 12px; margin-top: 25px;">
                 <button onclick="abrirSuporte(true)">Enviar para o Suporte</button>
                 <button class="btn-secondary" onclick="fecharModais()">Fechar</button>
@@ -203,12 +227,15 @@
             urlCriarContaEstudante: "https://danimcarv.github.io/virtbook/sites/como-criar-conta-estudante.html",
             urlCriarContaGeral: "https://danimcarv.github.io/virtbook/sites/como-criar-conta-geral.html",
             urlEncontrarTenant: "https://danimcarv.github.io/virtbook/sites/como-encontrar-meu-tenant-id.html",
+            urlPassoAPassoPonte: "https://danimcarv.github.io/virtbook/sites/passo-a-passo-ponte.html",
             urlBackendEmail: "https://formspree.io/f/xjgajdww",
             urlAppsScript: "https://script.google.com/macros/s/AKfycbx6oDfkzKY4akI4ICtgKX7Ku_GyReYXbaySDrQ52iiD1-kMD7buzsBGaQnz-mmOApUm/exec",
             rgName: "virtbook-rg",
             vmName: "virtbook-vm",
             location: "centralindia"
         };
+
+        const dataLimAvisos = new Date('2026-03-24T00:00:00-03:00');
 
         const msalConfig = {
             auth: { clientId: configApp.clientId, authority: "https://login.microsoftonline.com/common", redirectUri: window.location.href.split('?')[0].split('#')[0] },
@@ -222,16 +249,30 @@
         let ticketAtual = "";
         let erroAtual = "";
         let avaliacaoSelecionada = 0;
+        let webhookUrlSalva = localStorage.getItem("virtbook_webhook_url");
 
-        const templateJson = { "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#", "contentVersion": "1.0.0.0", "parameters": { "virtualMachineName1": { "type": "string" }, "adminUsername": { "type": "string", "defaultValue": "azureuser" }, "adminPassword": { "type": "secureString" }, "customImageId": { "type": "string", "defaultValue": "/subscriptions/0e179545-96ca-450a-afa3-ab585ce8bb46/resourceGroups/projeto-virtbook/providers/Microsoft.Compute/galleries/virtbook_img_gallery/images/virtbook_img_def_01" }, "location": { "type": "string", "defaultValue": "centralindia" }, "autoShutdownTime": { "type": "string", "defaultValue": "03:30" } }, "variables": { "nicName": "[concat(parameters('virtualMachineName1'), '-nic')]", "nsgName": "[concat(parameters('virtualMachineName1'), '-nsg')]", "vnetName": "[concat(parameters('virtualMachineName1'), '-vnet')]", "publicIpName": "[concat(parameters('virtualMachineName1'), '-ip')]", "subnetName": "default", "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]", "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('subnetName'))]", "scheduledShutdownTime": "[parameters('autoShutdownTime')]" }, "resources": [ { "name": "[variables('nicName')]", "type": "Microsoft.Network/networkInterfaces", "apiVersion": "2022-11-01", "location": "[parameters('location')]", "dependsOn": [ "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]", "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]", "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIpName'))]" ], "properties": { "ipConfigurations": [{ "name": "ipconfig1", "properties": { "subnet": { "id": "[variables('subnetRef')]" }, "privateIPAllocationMethod": "Dynamic", "publicIpAddress": { "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIpName'))]", "properties": { "deleteOption": "Delete" } } } }], "networkSecurityGroup": { "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]" } } }, { "name": "[variables('nsgName')]", "type": "Microsoft.Network/networkSecurityGroups", "apiVersion": "2020-05-01", "location": "[parameters('location')]", "properties": { "securityRules": [ { "name": "RDP-Port", "properties": { "priority": 300, "protocol": "TCP", "access": "Allow", "direction": "Inbound", "sourceAddressPrefix": "*", "sourcePortRange": "*", "destinationAddressPrefix": "*", "destinationPortRange": "3389" } } ] } }, { "name": "[variables('vnetName')]", "type": "Microsoft.Network/virtualNetworks", "apiVersion": "2024-10-01", "location": "[parameters('location')]", "properties": { "addressSpace": { "addressPrefixes": ["10.0.0.0/16"] }, "subnets": [{ "name": "default", "properties": { "addressPrefix": "10.0.0.0/24" } }] } }, { "name": "[variables('publicIpName')]", "type": "Microsoft.Network/publicIpAddresses", "apiVersion": "2023-06-01", "location": "[parameters('location')]", "sku": { "name": "Standard" }, "properties": { "publicIpAllocationMethod": "Static" } }, { "name": "[parameters('virtualMachineName1')]", "type": "Microsoft.Compute/virtualMachines", "apiVersion": "2024-03-01", "location": "[parameters('location')]", "dependsOn": [ "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]" ], "properties": { "hardwareProfile": { "vmSize": "Standard_E2as_v5" }, "storageProfile": { "osDisk": { "createOption": "fromImage", "managedDisk": { "storageAccountType": "Standard_LRS" }, "deleteOption": "Delete" }, "imageReference": { "id": "[parameters('customImageId')]" } }, "networkProfile": { "networkInterfaces": [{ "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]", "properties": { "deleteOption": "Delete" } }] }, "securityProfile": { "securityType": "TrustedLaunch", "uefiSettings": { "secureBootEnabled": true, "vTpmEnabled": true } }, "osProfile": { "computerName": "[parameters('virtualMachineName1')]", "adminUsername": "[parameters('adminUsername')]", "adminPassword": "[parameters('adminPassword')]" }, "licenseType": "Windows_Client" } }, { "type": "Microsoft.Compute/virtualMachines/extensions", "apiVersion": "2023-03-01", "name": "[concat(parameters('virtualMachineName1'), '/SetupVirtbook')]", "location": "[parameters('location')]", "dependsOn": [ "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName1'))]" ], "properties": { "publisher": "Microsoft.Compute", "type": "CustomScriptExtension", "typeHandlerVersion": "1.10", "autoUpgradeMinorVersion": true, "settings": { "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -Command \"Invoke-WebRequest -Uri ''https://github.com/winfsp/winfsp/releases/download/v2.1/winfsp-2.1.25156.msi'' -OutFile ''winfsp.msi''; Start-Process msiexec.exe -ArgumentList ''/i winfsp.msi /quiet /norestart'' -Wait; Invoke-WebRequest -Uri ''https://raw.githubusercontent.com/danimcarv/virtbook/refs/heads/main/resources/configurar_discos.bat'' -OutFile ''C:\\Users\\Public\\Desktop\\configurar_discos.bat'';\"')]" } } }, { "name": "[concat('shutdown-computevm-', parameters('virtualMachineName1'))]", "type": "Microsoft.DevTestLab/schedules", "apiVersion": "2018-09-15", "location": "[parameters('location')]", "dependsOn": [ "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName1'))]" ], "properties": { "status": "Enabled", "taskType": "ComputeVmShutdownTask", "dailyRecurrence": { "time": "[variables('scheduledShutdownTime')]" }, "timeZoneId": "E. South America Standard Time", "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName1'))]", "notificationSettings": { "status": "Disabled" } } } ] };
+        window.onload = () => {
+            if (new Date() > dataLimAvisos) {
+                const elemento = document.getElementById('avisos');
+                if (elemento) elemento.style.display = 'none';
+            }
+
+            if (webhookUrlSalva) {
+                iniciarAppWebhook();
+            }
+        };
+
+        const templateJson = { "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#", "contentVersion": "1.0.0.0", "parameters": { "virtualMachineName1": { "type": "string" }, "adminUsername": { "type": "string", "defaultValue": "azureuser" }, "adminPassword": { "type": "secureString" }, "customImageId": { "type": "string", "defaultValue": "/CommunityGalleries/virtbook-a638c7e2-3683-423b-a9ff-f7929317af32/images/virtbook_img_def_pub/versions/latest" }, "location": { "type": "string", "defaultValue": "centralindia" }, "autoShutdownTime": { "type": "string", "defaultValue": "03:30" }, "vmSize": { "type": "string" } }, "variables": { "nicName": "[concat(parameters('virtualMachineName1'), '-nic')]", "nsgName": "[concat(parameters('virtualMachineName1'), '-nsg')]", "vnetName": "[concat(parameters('virtualMachineName1'), '-vnet')]", "publicIpName": "[concat(parameters('virtualMachineName1'), '-ip')]", "subnetName": "default", "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]", "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('subnetName'))]", "scheduledShutdownTime": "[parameters('autoShutdownTime')]" }, "resources": [ { "name": "[variables('nicName')]", "type": "Microsoft.Network/networkInterfaces", "apiVersion": "2022-11-01", "location": "[parameters('location')]", "dependsOn": [ "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]", "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]", "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIpName'))]" ], "properties": { "ipConfigurations": [{ "name": "ipconfig1", "properties": { "subnet": { "id": "[variables('subnetRef')]" }, "privateIPAllocationMethod": "Dynamic", "publicIpAddress": { "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIpName'))]", "properties": { "deleteOption": "Delete" } } } }], "networkSecurityGroup": { "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]" } } }, { "name": "[variables('nsgName')]", "type": "Microsoft.Network/networkSecurityGroups", "apiVersion": "2020-05-01", "location": "[parameters('location')]", "properties": { "securityRules": [ { "name": "RDP-Port", "properties": { "priority": 300, "protocol": "TCP", "access": "Allow", "direction": "Inbound", "sourceAddressPrefix": "*", "sourcePortRange": "*", "destinationAddressPrefix": "*", "destinationPortRange": "3389" } } ] } }, { "name": "[variables('vnetName')]", "type": "Microsoft.Network/virtualNetworks", "apiVersion": "2024-10-01", "location": "[parameters('location')]", "properties": { "addressSpace": { "addressPrefixes": ["10.0.0.0/16"] }, "subnets": [{ "name": "default", "properties": { "addressPrefix": "10.0.0.0/24" } }] } }, { "name": "[variables('publicIpName')]", "type": "Microsoft.Network/publicIpAddresses", "apiVersion": "2023-06-01", "location": "[parameters('location')]", "sku": { "name": "Standard" }, "properties": { "publicIpAllocationMethod": "Static" } }, { "name": "[parameters('virtualMachineName1')]", "type": "Microsoft.Compute/virtualMachines", "apiVersion": "2024-03-01", "location": "[parameters('location')]", "dependsOn": [ "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]" ], "properties": { "hardwareProfile": { "vmSize": "[parameters('vmSize')]" }, "storageProfile": { "osDisk": { "createOption": "fromImage", "managedDisk": { "storageAccountType": "Standard_LRS" }, "deleteOption": "Delete" }, "imageReference": { "communityGalleryImageId": "[parameters('customImageId')]" } }, "networkProfile": { "networkInterfaces": [{ "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]", "properties": { "deleteOption": "Delete" } }] }, "osProfile": { "computerName": "[parameters('virtualMachineName1')]", "adminUsername": "[parameters('adminUsername')]", "adminPassword": "[parameters('adminPassword')]" }, "licenseType": "Windows_Client" } }, { "type": "Microsoft.Compute/virtualMachines/extensions", "apiVersion": "2023-03-01", "name": "[concat(parameters('virtualMachineName1'), '/SetupVirtbook')]", "location": "[parameters('location')]", "dependsOn": [ "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName1'))]" ], "properties": { "publisher": "Microsoft.Compute", "type": "CustomScriptExtension", "typeHandlerVersion": "1.10", "autoUpgradeMinorVersion": true, "settings": { "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -Command \"Invoke-WebRequest -Uri ''https://github.com/winfsp/winfsp/releases/download/v2.1/winfsp-2.1.25156.msi'' -OutFile ''winfsp.msi''; Start-Process msiexec.exe -ArgumentList ''/i winfsp.msi /quiet /norestart'' -Wait; Invoke-WebRequest -Uri ''https://raw.githubusercontent.com/danimcarv/virtbook/refs/heads/main/resources/configurar_discos.bat'' -OutFile ''C:\\Users\\Public\\Desktop\\configurar_discos.bat'';\"')]" } } }, { "name": "[concat('shutdown-computevm-', parameters('virtualMachineName1'))]", "type": "Microsoft.DevTestLab/schedules", "apiVersion": "2018-09-15", "location": "[parameters('location')]", "dependsOn": [ "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName1'))]" ], "properties": { "status": "Enabled", "taskType": "ComputeVmShutdownTask", "dailyRecurrence": { "time": "[variables('scheduledShutdownTime')]" }, "timeZoneId": "E. South America Standard Time", "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName1'))]", "notificationSettings": { "status": "Disabled" } } } ] };
 
         async function iniciarLogin() {
             document.getElementById('statusFeedback').innerText = "";
             document.getElementById('btnLogin').innerText = "Conectando...";
             document.getElementById('btnLogin').disabled = true;
+            
             try {
                 const loginResponse = await msalInstance.loginPopup({ scopes: ["openid", "profile", "email"] });
                 contaAtual = loginResponse.account;
+                
                 if (contaAtual.tenantId === "9188040d-6c67-4c5b-b112-36a304b66dad") {
                     let savedTenant = localStorage.getItem("virtbook_tenant_id");
                     if (!savedTenant) {
@@ -247,7 +288,55 @@
             } catch (error) {
                 document.getElementById('btnLogin').innerText = "Entrar com a Microsoft";
                 document.getElementById('btnLogin').disabled = false;
-                document.getElementById('statusFeedback').innerText = "Erro ao logar. Tente novamente.";
+                
+                const errStr = error.toString().toLowerCase();
+                
+                if (errStr.includes("admin_consent") || errStr.includes("aadsts90094") || errStr.includes("aadsts90093")) {
+                    document.getElementById('statusFeedback').innerText = "";
+                    fecharModais();
+                    document.getElementById('modalBloqueioTI').classList.remove('hidden');
+                } else {
+                    document.getElementById('statusFeedback').innerText = "Erro ao logar. Tente novamente.";
+                }
+            }
+        }
+
+        function salvarWebhookELogar() {
+            const urlVal = document.getElementById('inputWebhookUrl').value.trim();
+            if (!urlVal.startsWith("https://")) { 
+                alert("Por favor, cole uma URL válida começando com https://"); 
+                return; 
+            }
+            localStorage.setItem("virtbook_webhook_url", urlVal);
+            webhookUrlSalva = urlVal;
+            fecharModais();
+            iniciarAppWebhook();
+        }
+
+        async function iniciarAppWebhook() {
+            document.getElementById('loginView').style.display = "none";
+            document.getElementById('appView').style.display = "block";
+            document.getElementById('userNameDisplay').innerText = "Aluno";
+            subId = "SUB_ID_PONTE"; 
+            
+            // Extração dinâmica do subId real via Webhook
+            try {
+                const provUrl = `https://management.azure.com/subscriptions/SUB_ID_PONTE/providers/Microsoft.Compute?api-version=2021-04-01`;
+                const resProv = await chamadorApi(provUrl, 'GET');
+                if (resProv && resProv.id) {
+                    const match = resProv.id.match(/\/subscriptions\/([^/]+)/i);
+                    if (match && match[1]) {
+                        subId = match[1];
+                    }
+                }
+            } catch (e) {
+                console.log("Aviso: Ocorreu uma falha ao extrair o subId silenciosamente pela ponte.");
+            }
+
+            try {
+                await verificarEstadoMaquina();
+            } catch (e) {
+                mostrarErro(e);
             }
         }
 
@@ -290,49 +379,156 @@
                     tokenAzure = resInt.accessToken;
                     iniciarApp();
                 } catch (err) {
-                    localStorage.removeItem("virtbook_tenant_id");
-                    document.getElementById('btnLogin').style.display = "block";
-                    document.getElementById('btnLogin').innerText = "Entrar com a Microsoft";
-                    document.getElementById('btnLogin').disabled = false;
-                    document.getElementById('setupTenant').classList.add('hidden');
-                    document.getElementById('statusFeedback').innerText = "Acesso negado à infraestrutura ou Tenant ID incorreto.";
+                    const errStr = err.toString().toLowerCase();
+                    
+                    if (errStr.includes("admin_consent") || errStr.includes("aadsts90094") || errStr.includes("aadsts90093")) {
+                        fecharModais();
+                        document.getElementById('modalBloqueioTI').classList.remove('hidden');
+                    } else {
+                        localStorage.removeItem("virtbook_tenant_id");
+                        document.getElementById('btnLogin').style.display = "block";
+                        document.getElementById('btnLogin').innerText = "Entrar com a Microsoft";
+                        document.getElementById('btnLogin').disabled = false;
+                        document.getElementById('setupTenant').classList.add('hidden');
+                        document.getElementById('statusFeedback').innerText = "Acesso negado à infraestrutura ou Tenant ID incorreto.";
+                    }
                 }
             }
         }
 
         async function chamadorApi(url, metodo, body = null, isPolling = false) {
+            if (webhookUrlSalva) {
+                return chamadorWebhook(metodo, url, body, isPolling);
+            }
+
             const options = { method: metodo, headers: { 'Authorization': `Bearer ${tokenAzure}`, 'Content-Type': 'application/json' } };
             if (body) options.body = JSON.stringify(body);
             const res = await fetch(url, options);
+            
             if (!res.ok && res.status !== 404) {
                 const errText = await res.text();
-                throw new Error(`Erro HTTP ${res.status}: ${errText}`);
+                throw new Error(`Erro HTTP ${res.status}:\n${errText}`);
             }
             if (res.status === 404) return { is404: true };
-            if (res.status === 202 || res.status === 201) {
-                const asyncUrl = res.headers.get('Azure-AsyncOperation') || res.headers.get('Location');
-                if (asyncUrl && isPolling) return await aguardarPolling(asyncUrl);
+            
+            if ((res.status === 200 || res.status === 201 || res.status === 202) && isPolling) {
+                let asyncUrl = res.headers.get('Azure-AsyncOperation') || res.headers.get('Location');
+                if (!asyncUrl && metodo !== 'DELETE') asyncUrl = url;
+                if (asyncUrl) return await aguardarPolling(asyncUrl);
             }
+            
             const txt = await res.text();
             let parsed = txt ? JSON.parse(txt) : {};
             parsed.httpStatus = res.status;
             return parsed;
         }
 
+        async function chamadorWebhook(metodoAzure, targetUrl, bodyObj, isPolling = false) {
+            let path = targetUrl;
+            
+            const rgMatch = targetUrl.match(/(\/resource[Gg]roups\/.*)/);
+            if (rgMatch) {
+                path = rgMatch[1];
+            } else {
+                path = targetUrl.replace("https://management.azure.com", "").replace(/\/subscriptions\/[^/]+/, "");
+            }
+            
+            const payload = { action: metodoAzure, target: path, body: bodyObj };
+            const options = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) };
+            
+            try {
+                const res = await fetch(webhookUrlSalva, options);
+                
+                if (!res.ok && res.status !== 404) {
+                    // BLINDAGEM DE TIMEOUT: Se a ponte cair, ignoramos e mudamos pro radar direto na VM
+                    if ((res.status === 502 || res.status === 504 || res.status === 500) && isPolling) {
+                        let fallbackUrl = targetUrl;
+                        if (targetUrl.match(/\/(start|deallocate)\?/i)) {
+                            fallbackUrl = targetUrl.replace(/\/(start|deallocate)\?.*/i, '?api-version=2024-03-01');
+                        }
+                        return await aguardarPolling(fallbackUrl);
+                    }
+
+                    const errText = await res.text();
+                    let cleanError = errText;
+                    try {
+                        let j = JSON.parse(errText);
+                        if (j.error && j.error.message) cleanError = j.error.message;
+                    } catch(e) {}
+                    
+                    throw new Error(`Erro de Comunicação da Ponte (${res.status}):\n${cleanError}`);
+                }
+                
+                if (res.status === 404) return { is404: true };
+                
+                // Mapeia a URL limpa da VM caso o Webhook retorne sucesso mas não retorne o Header Async
+                if ((res.status === 200 || res.status === 201 || res.status === 202) && isPolling) {
+                    let pollUrl = targetUrl;
+                    if (targetUrl.match(/\/(start|deallocate)\?/i)) {
+                        pollUrl = targetUrl.replace(/\/(start|deallocate)\?.*/i, '?api-version=2024-03-01');
+                    }
+                    return await aguardarPolling(pollUrl);
+                }
+
+                const txt = await res.text();
+                let parsed = txt ? JSON.parse(txt) : {};
+                parsed.httpStatus = res.status;
+                return parsed;
+
+            } catch (errFetch) {
+                // BLINDAGEM SECUNDÁRIA: Falhas de rede do próprio fetch (Gateway Timeouts nativos)
+                if (isPolling && (errFetch.message.includes('502') || errFetch.message.includes('504') || errFetch.message.includes('network'))) {
+                    let fallbackUrl = targetUrl;
+                    if (targetUrl.match(/\/(start|deallocate)\?/i)) {
+                        fallbackUrl = targetUrl.replace(/\/(start|deallocate)\?.*/i, '?api-version=2024-03-01');
+                    }
+                    return await aguardarPolling(fallbackUrl);
+                }
+                throw errFetch;
+            }
+        }
+
         async function aguardarPolling(url) {
+            let isDeployment = url.toLowerCase().includes('/deployments/');
+            let tentativas404 = 0;
+
             while (true) {
                 await new Promise(r => setTimeout(r, 5000));
                 try {
                     const res = await chamadorApi(url, 'GET');
-                    if (res.is404) return true;
-                    if (res.status === "Succeeded") return true;
-                    if (res.status === "Failed" || res.status === "Canceled") throw new Error("Operação falhou na Azure.");
+                    
+                    if (res.is404) {
+                        if (isDeployment) {
+                            tentativas404++;
+                            if (tentativas404 > 6) throw new Error("A implantação não foi registrada pela Azure após 30 segundos de espera.");
+                            continue; 
+                        } else {
+                            return true; 
+                        }
+                    }
+                    
+                    let state = res.status;
+                    if (!state && res.properties && res.properties.provisioningState) {
+                        state = res.properties.provisioningState;
+                    }
+
+                    if (state === "Succeeded") return true;
+                    if (state === "Failed" || state === "Canceled") {
+                        throw new Error(`A operação falhou na Azure (Estado: ${state}).\nResposta completa do servidor:\n${JSON.stringify(res, null, 2)}`);
+                    }
+
+                    if (state === "InProgress" || state === "Running" || state === "Accepted" || state === "Creating" || state === "Updating") {
+                        continue;
+                    }
+
                     if (res.httpStatus === 200 || res.httpStatus === 204) {
-                        if (res.status === "InProgress" || res.status === "Running" || res.status === "Accepted") continue;
                         return true;
                     }
                 } catch(e) {
-                    if (e.message.includes("404")) return true;
+                    if (e.message.includes("404")) {
+                        if (isDeployment) continue; 
+                        return true;
+                    }
                     throw e;
                 }
             }
@@ -353,7 +549,13 @@
 
         function sair() {
             localStorage.removeItem("virtbook_tenant_id");
-            msalInstance.logoutPopup().then(() => { window.location.reload(); });
+            localStorage.removeItem("virtbook_webhook_url");
+            webhookUrlSalva = null;
+            if (msalInstance.getAllAccounts().length > 0) {
+                msalInstance.logoutPopup().then(() => { window.location.reload(); });
+            } else {
+                window.location.reload();
+            }
         }
 
         async function verificarEstadoMaquina() {
@@ -419,12 +621,70 @@
             toggleLoader(true, 'loadCreate');
             
             try {
-                const rgUrl = `https://management.azure.com/subscriptions/${subId}/resourcegroups/${configApp.rgName}?api-version=2021-04-01`;
-                await chamadorApi(rgUrl, 'PUT', { location: configApp.location });
+                const isPersonalAccount = contaAtual && contaAtual.tenantId === "9188040d-6c67-4c5b-b112-36a304b66dad";
+                
+                let rotas = [];
+                if (isPersonalAccount && !webhookUrlSalva) {
+                    rotas.push({ vmSize: "Standard_E2as_v5", location: "centralindia", zone: null });
+                } else {
+                    rotas.push({ vmSize: "Standard_E2s_v3", location: "eastus", zone: "3" });
+                    rotas.push({ vmSize: "Standard_E2s_v3", location: "brazilsouth", zone: "3" });
+                    rotas.push({ vmSize: "Standard_B4ms", location: "brazilsouth", zone: "3" });
+                }
 
-                const paramJson = { "virtualMachineName1": { "value": configApp.vmName }, "adminPassword": { "value": pwd }, "autoShutdownTime": { "value": sTime } };
-                const deployUrl = `https://management.azure.com/subscriptions/${subId}/resourcegroups/${configApp.rgName}/providers/Microsoft.Resources/deployments/virtbook-deploy?api-version=2021-04-01`;
-                await chamadorApi(deployUrl, 'PUT', { properties: { mode: "Incremental", template: templateJson, parameters: paramJson } }, true);
+                const rgUrl = webhookUrlSalva ? 
+                    `https://management.azure.com/subscriptions/webhook_subscription/resourcegroups/${configApp.rgName}?api-version=2021-04-01` :
+                    `https://management.azure.com/subscriptions/${subId}/resourcegroups/${configApp.rgName}?api-version=2021-04-01`;
+                
+                await chamadorApi(rgUrl, 'PUT', { location: rotas[0].location });
+                
+                let sucesso = false;
+                let ultimoErro = null;
+
+                for (let i = 0; i < rotas.length; i++) {
+                    try {
+                        let rotaAtual = rotas[i];
+
+                        const vmResource = templateJson.resources.find(r => r.type === "Microsoft.Compute/virtualMachines");
+                        const ipResource = templateJson.resources.find(r => r.type === "Microsoft.Network/publicIpAddresses");
+                        
+                        if (rotaAtual.zone) {
+                            vmResource.zones = [rotaAtual.zone];
+                            ipResource.zones = [rotaAtual.zone];
+                        } else {
+                            delete vmResource.zones;
+                            delete ipResource.zones;
+                        }
+
+                        const paramJson = { 
+                            "virtualMachineName1": { "value": configApp.vmName }, 
+                            "adminPassword": { "value": pwd }, 
+                            "autoShutdownTime": { "value": sTime },
+                            "vmSize": { "value": rotaAtual.vmSize },
+                            "location": { "value": rotaAtual.location }
+                        };
+
+                        const deployUrl = webhookUrlSalva ? 
+                            `https://management.azure.com/subscriptions/webhook_subscription/resourcegroups/${configApp.rgName}/providers/Microsoft.Resources/deployments/virtbook-deploy?api-version=2021-04-01` :
+                            `https://management.azure.com/subscriptions/${subId}/resourcegroups/${configApp.rgName}/providers/Microsoft.Resources/deployments/virtbook-deploy?api-version=2021-04-01`;
+                        
+                        const resDeploy = await chamadorApi(deployUrl, 'PUT', { properties: { mode: "Incremental", template: templateJson, parameters: paramJson } }, true);
+                        if (resDeploy && resDeploy.is404) throw new Error("A comunicação falhou (404 Not Found). O caminho da API está incorreto na implantação.");
+                        
+                        sucesso = true;
+                        break; 
+                    } catch (e) {
+                        ultimoErro = e;
+                    }
+                }
+
+                if (!sucesso) {
+                    if (rotas.length > 1) {
+                        throw new Error(`Falha na implantação: Todas as 3 tentativas de combinação de região e tipo de instância falharam. \n\nÚltimo erro da Microsoft:\n${ultimoErro.message || ultimoErro}`);
+                    } else {
+                        throw ultimoErro;
+                    }
+                }
                 
                 document.getElementById('vmPassword').value = "";
                 localStorage.setItem('virtbook_first_use_' + configApp.vmName, 'true');
@@ -440,7 +700,10 @@
             toggleLoader(true, 'loadLigar');
             try {
                 const url = `https://management.azure.com/subscriptions/${subId}/resourceGroups/${configApp.rgName}/providers/Microsoft.Compute/virtualMachines/${configApp.vmName}/start?api-version=2024-03-01`;
-                await chamadorApi(url, 'POST', null, true);
+                
+                const resLigar = await chamadorApi(url, 'POST', null, true);
+                if (resLigar && resLigar.is404) throw new Error("Máquina não encontrada para iniciar (Erro 404).");
+
                 localStorage.removeItem('virtbook_first_use_' + configApp.vmName);
                 await verificarEstadoMaquina();
 
@@ -464,7 +727,10 @@
             toggleLoader(true, 'loadDesligar');
             try {
                 const url = `https://management.azure.com/subscriptions/${subId}/resourceGroups/${configApp.rgName}/providers/Microsoft.Compute/virtualMachines/${configApp.vmName}/deallocate?api-version=2024-03-01`;
-                await chamadorApi(url, 'POST', null, true);
+                
+                const resDesligar = await chamadorApi(url, 'POST', null, true);
+                if (resDesligar && resDesligar.is404) throw new Error("Máquina não encontrada para desligar (Erro 404).");
+                
                 await verificarEstadoMaquina();
             } catch (e) { mostrarErro(e); }
             finally { toggleLoader(false, 'loadDesligar'); }
@@ -473,6 +739,7 @@
         async function acessarAreaTrabalho() {
             try {
                 const url = `https://management.azure.com/subscriptions/${subId}/resourceGroups/${configApp.rgName}/providers/Microsoft.Network/publicIPAddresses/${configApp.vmName}-ip?api-version=2023-06-01`;
+                
                 const res = await chamadorApi(url, 'GET');
                 const ip = res.properties.ipAddress;
                 const rdpContent = `auto connect:i:1\nfull address:s:${ip}\nusername:s:azureuser`;
@@ -489,7 +756,10 @@
             toggleLoader(true, 'loadExcluir');
             try {
                 const url = `https://management.azure.com/subscriptions/${subId}/resourcegroups/${configApp.rgName}?api-version=2021-04-01`;
-                await chamadorApi(url, 'DELETE', null, true);
+                
+                const resExcluir = await chamadorApi(url, 'DELETE', null, true);
+                if (resExcluir && resExcluir.is404) throw new Error("Recurso não encontrado para exclusão (Erro 404).");
+                
                 alert("Máquina deletada com sucesso.");
                 await verificarEstadoMaquina();
             } catch (e) { mostrarErro(e); }
@@ -508,7 +778,7 @@
         }
 
         function mostrarErro(err) {
-            erroAtual = err.toString();
+            erroAtual = err ? err.toString() : "Erro desconhecido reportado.";
             document.getElementById('textoErro').innerText = erroAtual;
             document.getElementById('modalErro').classList.remove('hidden');
         }
@@ -517,12 +787,17 @@
             fecharModais();
             gerarTicket();
             document.getElementById('modalSuporte').classList.remove('hidden');
+            
+            const emailP = document.getElementById('txtSuporteEmail');
+            
             if (deErro) {
                 document.getElementById('supDescricao').classList.add('hidden');
+                emailP.innerHTML = 'Nosso e-mail: <a href="mailto:projeto.virtbook@gmail.com">projeto.virtbook@gmail.com</a>';
             } else {
                 erroAtual = "";
                 document.getElementById('supDescricao').classList.remove('hidden');
                 document.getElementById('supDescricao').value = "";
+                emailP.innerHTML = 'Caso prefira, nos envie um e-mail diretamente: <a href="mailto:projeto.virtbook@gmail.com">projeto.virtbook@gmail.com</a>';
             }
         }
 
@@ -531,6 +806,7 @@
             document.getElementById('modalContas').classList.add('hidden');
             document.getElementById('modalErro').classList.add('hidden');
             document.getElementById('modalAvaliacao').classList.add('hidden');
+            document.getElementById('modalBloqueioTI').classList.add('hidden');
             const btn = document.getElementById('btnEnviarSuporte');
             if(btn) {
                 btn.disabled = false;
@@ -562,7 +838,12 @@
             const sn = document.getElementById('supSobrenome').value.trim();
             const e = document.getElementById('supEmail').value.trim();
             const ec = document.getElementById('supEmailConf').value.trim();
-            const desc = erroAtual ? erroAtual : document.getElementById('supDescricao').value.trim();
+            
+            let desc = document.getElementById('supDescricao').value.trim();
+            if (document.getElementById('supDescricao').classList.contains('hidden')) {
+                desc = erroAtual ? "LOG DE ERRO DA AZURE:\n" + erroAtual : "Log de erro não capturado.";
+            }
+
             const arquivos = document.getElementById('supArquivo').files;
             const btn = document.getElementById('btnEnviarSuporte');
 
@@ -638,15 +919,6 @@
             localStorage.setItem('virtbook_evaluated_' + configApp.vmName, 'true');
             enviarEmailBackend({ title: `Nova avaliação: ${avaliacaoSelecionada} estrelas`, avaliacao: avaliacaoSelecionada });
             fecharModais();
-        }
-
-        function abrirVisaoGeralAssinatura() {
-            if (subId) {
-                const url = `https://portal.azure.com/#resource/subscriptions/${subId}/overview`;
-                window.open(url, '_blank');
-            } else {
-                alert("Sua assinatura ainda está sendo carregada. Aguarde alguns segundos e tente novamente.");
-            }
         }
 
         function enviarEmailBackend(dados) {

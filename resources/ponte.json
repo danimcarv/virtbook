@@ -99,6 +99,7 @@
                           "type": "ManagedServiceIdentity"
                         }
                       },
+                      "operationOptions": "DisableAsyncPattern",
                       "runAfter": {}
                     },
                     "Response": {
