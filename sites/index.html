@@ -620,6 +620,7 @@
             
             if (!validarSenha(pwd)) { alert("A senha não atende aos requisitos de complexidade da Azure."); return; }
             
+            document.getElementById('btnCreate').disabled = true;
             toggleLoader(true, 'loadCreate');
             
             try {
