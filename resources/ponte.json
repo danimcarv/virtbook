@@ -1,91 +1,117 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "logicAppName": {
       "type": "string",
-      "defaultValue": "virtbook-bridge-app"
+      "defaultValue": "virtbook-bridge-app",
+      "metadata": { "description": "Nome da ponte de comunicacao do VirtBook" }
     },
     "location": {
       "type": "string",
-      "defaultValue": "[resourceGroup().location]"
+      "defaultValue": "eastus",
+      "metadata": { "description": "Regiao onde a ponte sera hospedada" }
     }
   },
   "resources": [
     {
-      "type": "Microsoft.Logic/workflows",
-      "apiVersion": "2019-05-01",
-      "name": "[parameters('logicAppName')]",
-      "location": "[parameters('location')]",
-      "identity": {
-        "type": "SystemAssigned"
-      },
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2021-04-01",
+      "name": "virtbook-bridge-rg",
+      "location": "[parameters('location')]"
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "bridgeDeployment",
+      "resourceGroup": "virtbook-bridge-rg",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/resourceGroups', 'virtbook-bridge-rg')]"
+      ],
       "properties": {
-        "state": "Enabled",
-        "definition": {
-          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
           "contentVersion": "1.0.0.0",
-          "parameters": {
-            "subId": {
-              "type": "String",
-              "defaultValue": "[subscription().subscriptionId]"
-            }
-          },
-          "triggers": {
-            "manual": {
-              "type": "Request",
-              "kind": "Http",
-              "inputs": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "action": { "type": "string" },
-                    "target": { "type": "string" },
-                    "body": { "type": ["object", "null"] }
-                  }
+          "resources": [
+            {
+              "type": "Microsoft.Logic/workflows",
+              "apiVersion": "2019-05-01",
+              "name": "[parameters('logicAppName')]",
+              "location": "[parameters('location')]",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "state": "Enabled",
+                "definition": {
+                  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                  "contentVersion": "1.0.0.0",
+                  "parameters": {
+                    "subId": {
+                      "type": "String",
+                      "defaultValue": "[subscription().subscriptionId]"
+                    }
+                  },
+                  "triggers": {
+                    "manual": {
+                      "type": "Request",
+                      "kind": "Http",
+                      "inputs": {
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "action": { "type": "string" },
+                            "target": { "type": "string" },
+                            "body": { "type": ["object", "null"] }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "actions": {
+                    "HTTP": {
+                      "type": "Http",
+                      "inputs": {
+                        "method": "@triggerBody()?['action']",
+                        "uri": "@concat('https://management.azure.com/subscriptions/', parameters('subId'), triggerBody()?['target'])",
+                        "body": "@triggerBody()?['body']",
+                        "authentication": {
+                          "type": "ManagedServiceIdentity"
+                        }
+                      },
+                      "runAfter": {}
+                    },
+                    "Response": {
+                      "type": "Response",
+                      "inputs": {
+                        "statusCode": "@outputs('HTTP')['statusCode']",
+                        "headers": "@outputs('HTTP')['headers']",
+                        "body": "@outputs('HTTP')['body']"
+                      },
+                      "runAfter": {
+                        "HTTP": [ "Succeeded", "Failed" ]
+                      }
+                    }
+                  },
+                  "outputs": {}
                 }
               }
             }
-          },
-          "actions": {
-            "HTTP": {
-              "type": "Http",
-              "inputs": {
-                "method": "@triggerBody()?['action']",
-                "uri": "@concat('https://management.azure.com/subscriptions/', parameters('subId'), triggerBody()?['target'])",
-                "body": "@triggerBody()?['body']",
-                "authentication": {
-                  "type": "ManagedServiceIdentity"
-                }
-              },
-              "runAfter": {}
-            },
-            "Response": {
-              "type": "Response",
-              "inputs": {
-                "statusCode": "@outputs('HTTP')['statusCode']",
-                "headers": "@outputs('HTTP')['headers']",
-                "body": "@outputs('HTTP')['body']"
-              },
-              "runAfter": {
-                "HTTP": [ "Succeeded", "Failed" ]
-              }
-            }
-          },
-          "outputs": {}
+          ]
         }
       }
     },
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2020-04-01-preview",
-      "name": "[guid(resourceGroup().id, 'Contributor')]",
+      "name": "[guid(subscription().subscriptionId, 'virtbook-bridge')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Logic/workflows', parameters('logicAppName'))]"
+        "bridgeDeployment"
       ],
       "properties": {
         "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c')]",
-        "principalId": "[reference(resourceId('Microsoft.Logic/workflows', parameters('logicAppName')), '2019-05-01', 'Full').identity.principalId]",
+        "principalId": "[reference(resourceId('virtbook-bridge-rg', 'Microsoft.Logic/workflows', parameters('logicAppName')), '2019-05-01', 'Full').identity.principalId]",
         "principalType": "ServicePrincipal"
       }
     }
