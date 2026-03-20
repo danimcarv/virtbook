@@ -131,7 +131,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2020-04-01-preview",
-      "name": "[guid(subscription().subscriptionId, reference('bridgeDeployment').outputs.logicAppPrincipalId.value)]",
+      "name": "[guid(subscription().subscriptionId, 'virtbook-bridge-v2')]",
       "dependsOn": [
         "bridgeDeployment"
       ],
