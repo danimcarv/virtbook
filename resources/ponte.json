@@ -9,7 +9,7 @@
     },
     "location": {
       "type": "string",
-      "defaultValue": "eastus",
+      "defaultValue": "centralindia",
       "metadata": { "description": "Regiao onde a ponte sera hospedada" }
     }
   },
@@ -30,15 +30,34 @@
       ],
       "properties": {
         "mode": "Incremental",
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "parameters": {
+          "innerLogicAppName": {
+            "value": "[parameters('logicAppName')]"
+          },
+          "innerLocation": {
+            "value": "[parameters('location')]"
+          }
+        },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
           "contentVersion": "1.0.0.0",
+          "parameters": {
+            "innerLogicAppName": {
+              "type": "string"
+            },
+            "innerLocation": {
+              "type": "string"
+            }
+          },
           "resources": [
             {
               "type": "Microsoft.Logic/workflows",
               "apiVersion": "2019-05-01",
-              "name": "[parameters('logicAppName')]",
-              "location": "[parameters('location')]",
+              "name": "[parameters('innerLogicAppName')]",
+              "location": "[parameters('innerLocation')]",
               "identity": {
                 "type": "SystemAssigned"
               },
@@ -98,7 +117,13 @@
                 }
               }
             }
-          ]
+          ],
+          "outputs": {
+            "logicAppPrincipalId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Logic/workflows', parameters('innerLogicAppName')), '2019-05-01', 'Full').identity.principalId]"
+            }
+          }
         }
       }
     },
@@ -111,7 +136,7 @@
       ],
       "properties": {
         "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c')]",
-        "principalId": "[reference(resourceId('virtbook-bridge-rg', 'Microsoft.Logic/workflows', parameters('logicAppName')), '2019-05-01', 'Full').identity.principalId]",
+        "principalId": "[reference('bridgeDeployment').outputs.logicAppPrincipalId.value]",
         "principalType": "ServicePrincipal"
       }
     }
