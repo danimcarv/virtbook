@@ -463,6 +463,19 @@
                 
                 // Mapeia a URL limpa da VM caso o Webhook retorne sucesso mas não retorne o Header Async
                 if ((res.status === 200 || res.status === 201 || res.status === 202) && isPolling) {
+                    if (metodoAzure === 'DELETE') {
+                        // Webhook não repassa headers async. A única garantia de exclusão real é o 404 do recurso.
+                        while (true) {
+                            await new Promise(r => setTimeout(r, 5000));
+                            try {
+                                const checkRes = await chamadorApi(targetUrl, 'GET');
+                                if (checkRes.is404) return true;
+                            } catch(e) {
+                                if (e.message.includes("404")) return true;
+                            }
+                        }
+                    }
+
                     let pollUrl = targetUrl;
                     if (targetUrl.match(/\/(start|deallocate)\?/i)) {
                         pollUrl = targetUrl.replace(/\/(start|deallocate)\?.*/i, '?api-version=2024-03-01');
@@ -518,7 +531,7 @@
                         throw new Error(`A operação falhou na Azure (Estado: ${state}).\nResposta completa do servidor:\n${JSON.stringify(res, null, 2)}`);
                     }
 
-                    // AQUI ESTÁ A CORREÇÃO: "Deleting" adicionado para a tela continuar carregando
+                    // "Deleting" adicionado para a tela continuar carregando
                     if (state === "InProgress" || state === "Running" || state === "Accepted" || state === "Creating" || state === "Updating" || state === "Deleting") {
                         continue;
                     }
@@ -773,6 +786,7 @@
             if (show) {
                 document.getElementById('btnLigar').disabled = true;
                 document.getElementById('btnDesligar').disabled = true;
+                document.getElementById('btnRdp').disabled = true;
                 document.getElementById('btnExcluir').disabled = true;
                 if(loaderId) document.getElementById(loaderId).classList.remove('hidden');
             } else {
