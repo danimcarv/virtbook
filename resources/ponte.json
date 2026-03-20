@@ -9,7 +9,7 @@
     },
     "location": {
       "type": "string",
-      "defaultValue": "centralindia",
+      "defaultValue": "brazilsouth",
       "metadata": { "description": "Regiao onde a ponte sera hospedada" }
     }
   },
