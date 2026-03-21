@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VirtBook - Autenticação Universal</title>
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/lib/msal-browser.min.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 40px; background-color: #f4f4f9; color: #333; }
+        .container { max-width: 650px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: auto; }
+        h2 { color: #0078D4; margin-top: 0; }
+        button { background-color: #0078D4; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: background 0.3s; margin-top: 10px; }
+        button:hover { background-color: #005A9E; }
+        .info-box { background: #e1dfdd; padding: 20px; border-radius: 6px; margin-top: 20px; display: none; }
+        .setup-box { border-left: 5px solid #0078D4; background: #f3f2f1; }
+        input[type="text"] { width: 95%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        pre { white-space: pre-wrap; word-wrap: break-word; font-size: 13px; color: #d6e2eb; background: #1e1e1e; padding: 15px; border-radius: 6px; max-height: 200px; overflow-y: auto; }
+        .erro { color: #d13438; font-weight: bold; margin-top: 10px; }
+        a { color: #0078D4; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>VirtBook</h2>
+        <p>Acesse seu ambiente virtual. Suporte para contas institucionais e pessoais.</p>
+        
+        <button id="btnLogin" onclick="iniciarLogin()">Entrar com a Microsoft</button>
+        <p id="statusFeedback" class="erro"></p>
+
+        <div id="setupTenant" class="info-box setup-box">
+            <h3 style="margin-top: 0;">Configuração Inicial Necessária</h3>
+            <p>Identificamos que você está usando uma conta pessoal. Para que o VirtBook possa criar suas máquinas virtuais usando o <b>Azure for Students</b>, precisamos vincular o seu Diretório.</p>
+            <p><a href="https://portal.azure.com/#settings/directory" target="_blank">👉 Clique aqui para descobrir o seu Tenant ID</a></p>
+            
+            <input type="text" id="inputTenantId" placeholder="Cole seu Tenant ID aqui (Ex: 1234abcd-1234-...)">
+            <button onclick="salvarTenantEContinuar()" style="background-color: #107c10;">Salvar e Continuar</button>
+        </div>
+
+        <div id="resultado" class="info-box">
+            <h3 style="margin-top: 0;">Bem-vindo(a), <span id="nomeAluno"></span>!</h3>
+            <p><strong>E-mail conectado:</strong> <span id="emailAluno"></span></p>
+            
+            <div id="divToken" style="display:none; margin-top: 15px;">
+                <p style="margin-bottom: 5px;"><strong>Chave de Acesso da Azure (Pronta para uso):</strong></p>
+                <pre id="tokenExibicao"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const msalConfig = {
+            auth: {
+                clientId: "4b05dec0-b195-405d-90d2-990b44e36e4b", // <--- OBRIGATÓRIO
+                authority: "https://login.microsoftonline.com/common",
+                redirectUri: "http://localhost:5500/test.html" // <--- OBRIGATÓRIO (Tem que ser igual a da Azure/Navegador)
+            },
+            cache: { cacheLocation: "localStorage" }
+        };
+
+        const msalInstance = new msal.PublicClientApplication(msalConfig);
+        let contaAtual = null;
+
+        // ETAPA 1: Apenas faz o Login e descobre quem é o aluno
+        async function iniciarLogin() {
+            document.getElementById('statusFeedback').innerText = "";
+            document.getElementById('btnLogin').innerText = "Conectando...";
+            document.getElementById('btnLogin').disabled = true;
+
+            try {
+                const loginResponse = await msalInstance.loginPopup({ scopes: ["openid", "profile", "email"] });
+                contaAtual = loginResponse.account;
+                const emailAluno = contaAtual.username.toLowerCase();
+                
+                document.getElementById('nomeAluno').innerText = contaAtual.name;
+                document.getElementById('emailAluno').innerText = emailAluno;
+
+                // Esconde o botão de login principal
+                document.getElementById('btnLogin').style.display = "none";
+
+                // Se não for e-mail de faculdade/escola, consideramos pessoal
+				const isPersonalAccount = contaAtual.tenantId === "9188040d-6c67-4c5b-b112-36a304b66dad";
+				
+				if (isPersonalAccount) {
+                    let savedTenant = localStorage.getItem("virtbook_tenant_id");
+                    if (!savedTenant) {
+                        // Mostra a nossa interface bonita pedindo o ID e PAUSA a execução
+                        document.getElementById('setupTenant').style.display = "block";
+                        return; 
+                    } else {
+                        // Se já tem salvo, vai direto
+                        buscarTokenAzure(savedTenant);
+                    }
+                } else {
+                    // Contas institucionais usam o 'common' naturalmente
+                    buscarTokenAzure("common");
+                }
+
+            } catch (error) {
+                console.error("Falha no login:", error);
+                document.getElementById('btnLogin').innerText = "Entrar com a Microsoft";
+                document.getElementById('btnLogin').disabled = false;
+                document.getElementById('statusFeedback').innerText = "Erro ao logar. Tente novamente.";
+            }
+        }
+
+        // ETAPA 1.5: Função do botão "Salvar e Continuar" da nossa interface
+        function salvarTenantEContinuar() {
+            const inputVal = document.getElementById('inputTenantId').value.trim();
+            if (inputVal === "") {
+                alert("Por favor, cole o seu Tenant ID válido.");
+                return;
+            }
+            
+            // Salva na memória do navegador
+            localStorage.setItem("virtbook_tenant_id", inputVal);
+            
+            // Esconde o painel de setup
+            document.getElementById('setupTenant').style.display = "none";
+            
+            // Retoma a execução buscando o token
+            buscarTokenAzure(inputVal);
+        }
+
+        // ETAPA 2: Resgata a permissão da infraestrutura
+        async function buscarTokenAzure(tenantId) {
+            document.getElementById('resultado').style.display = "block";
+            
+            const azureTokenRequest = {
+                scopes: ["https://management.azure.com/user_impersonation"],
+                account: contaAtual,
+                authority: `https://login.microsoftonline.com/${tenantId}`
+            };
+
+            try {
+                const azureResponse = await msalInstance.acquireTokenSilent(azureTokenRequest);
+                mostrarTokenNaTela(azureResponse.accessToken);
+            } catch (silentError) {
+                console.log("Pedindo autorização na tela...");
+                try {
+                    const interactiveResponse = await msalInstance.acquireTokenPopup(azureTokenRequest);
+                    mostrarTokenNaTela(interactiveResponse.accessToken);
+                } catch (error) {
+                    document.getElementById('statusFeedback').innerText = "Você não tem permissão para acessar a Azure ou o Tenant ID está incorreto.";
+                    // Se deu erro crítico (ID errado), apagamos da memória para ele tentar de novo depois
+                    localStorage.removeItem("virtbook_tenant_id");
+                }
+            }
+        }
+
+        function mostrarTokenNaTela(token) {
+            document.getElementById('divToken').style.display = "block";
+            document.getElementById('tokenExibicao').innerText = token;
+        }
+    </script>
+</body>
+</html>

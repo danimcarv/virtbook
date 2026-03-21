@@ -1,0 +1,159 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachineName1": { "type": "string" },
+        "adminUsername": { "type": "string", "defaultValue": "azureuser" },
+        "adminPassword": { "type": "secureString" },
+        "customImageId": { 
+            "type": "string", 
+            "defaultValue": "/subscriptions/0e179545-96ca-450a-afa3-ab585ce8bb46/resourceGroups/projeto-virtbook/providers/Microsoft.Compute/galleries/virtbook_img_gallery/images/virtbook_img_def_01" 
+        },
+        "location": { "type": "string", "defaultValue": "centralindia" },
+        "autoShutdownTime": {
+            "type": "string",
+            "defaultValue": "03:30"
+        }
+    },
+    "variables": {
+        "nicName": "[concat(parameters('virtualMachineName1'), '-nic')]",
+        "nsgName": "[concat(parameters('virtualMachineName1'), '-nsg')]",
+        "vnetName": "[concat(parameters('virtualMachineName1'), '-vnet')]",
+        "publicIpName": "[concat(parameters('virtualMachineName1'), '-ip')]",
+        "subnetName": "default",
+        "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('subnetName'))]",
+        "scheduledShutdownTime": "[parameters('autoShutdownTime')]"
+    },
+    "resources": [
+        {
+            "name": "[variables('nicName')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2022-11-01",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+                "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIpName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [{
+                    "name": "ipconfig1",
+                    "properties": {
+                        "subnet": { "id": "[variables('subnetRef')]" },
+                        "privateIPAllocationMethod": "Dynamic",
+                        "publicIpAddress": {
+                            "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIpName'))]",
+                            "properties": { "deleteOption": "Delete" }
+                        }
+                    }
+                }],
+                "networkSecurityGroup": { "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]" }
+            }
+        },
+        {
+            "name": "[variables('nsgName')]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2020-05-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "RDP-Port",
+                        "properties": {
+                            "priority": 300, "protocol": "TCP", "access": "Allow", "direction": "Inbound",
+                            "sourceAddressPrefix": "*", "sourcePortRange": "*", "destinationAddressPrefix": "*", "destinationPortRange": "3389"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[variables('vnetName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2024-10-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "addressSpace": { "addressPrefixes": ["10.0.0.0/16"] },
+                "subnets": [{ "name": "default", "properties": { "addressPrefix": "10.0.0.0/24" } }]
+            }
+        },
+        {
+            "name": "[variables('publicIpName')]",
+            "type": "Microsoft.Network/publicIpAddresses",
+            "apiVersion": "2023-06-01",
+            "location": "[parameters('location')]",
+            "sku": { "name": "Standard" },
+            "properties": { "publicIpAllocationMethod": "Static" }
+        },
+        {
+            "name": "[parameters('virtualMachineName1')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2024-03-01",
+            "location": "[parameters('location')]",
+            "dependsOn": [ "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]" ],
+            "properties": {
+                "hardwareProfile": { "vmSize": "Standard_E2as_v5" },
+                "storageProfile": {
+                    "osDisk": {
+                        "createOption": "fromImage",
+                        "managedDisk": { "storageAccountType": "Standard_LRS" },
+                        "deleteOption": "Delete"
+                    },
+                    "imageReference": { "id": "[parameters('customImageId')]" }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [{
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]",
+                        "properties": { "deleteOption": "Delete" }
+                    }]
+                },
+                "securityProfile": {
+                    "securityType": "TrustedLaunch",
+                    "uefiSettings": { "secureBootEnabled": true, "vTpmEnabled": true }
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachineName1')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "licenseType": "Windows_Client"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2023-03-01",
+            "name": "[concat(parameters('virtualMachineName1'), '/SetupVirtbook')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName1'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.10",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+					"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -Command \"Invoke-WebRequest -Uri ''https://github.com/winfsp/winfsp/releases/download/v2.1/winfsp-2.1.25156.msi'' -OutFile ''winfsp.msi''; Start-Process msiexec.exe -ArgumentList ''/i winfsp.msi /quiet /norestart'' -Wait; Invoke-WebRequest -Uri ''https://raw.githubusercontent.com/danimcarv/virtbook/refs/heads/main/resources/configurar_discos.bat'' -OutFile ''C:\\Users\\Public\\Desktop\\configurar_discos.bat'';\"')]"
+				}
+            }
+        },
+        {
+            "name": "[concat('shutdown-computevm-', parameters('virtualMachineName1'))]",
+            "type": "Microsoft.DevTestLab/schedules",
+            "apiVersion": "2018-09-15",
+            "location": "[parameters('location')]",
+            "dependsOn": [ "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName1'))]" ],
+            "properties": {
+                "status": "Enabled",
+                "taskType": "ComputeVmShutdownTask",
+                "dailyRecurrence": {
+                    "time": "[variables('scheduledShutdownTime')]"
+                },
+                "timeZoneId": "E. South America Standard Time",
+                "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName1'))]",
+                "notificationSettings": { "status": "Disabled" }
+            }
+        }
+    ]
+}
